@@ -1,0 +1,4 @@
+venv/
+static/
+check_data.py
+test.py
