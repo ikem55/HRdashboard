@@ -5,6 +5,8 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 
+import flask
+
 import pandas as pd
 
 import pages.toppage as p1
@@ -19,7 +21,8 @@ from components.get_data import GetData
 import components.calc_data as cd
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = flask.Flask(__name__) # define flask app.server
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=server)
 
 # the style arguments for the sidebar. We use position:fixed and a fixed width
 SIDEBAR_STYLE = {
