@@ -1,5 +1,7 @@
 .idea/
 venv/
 static/
+components/__pycache__/
+pages/__pycache__/
 check_data.py
 test.py
