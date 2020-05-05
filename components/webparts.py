@@ -85,7 +85,7 @@ def dbc_race_info(race_sr):
     return \
         dbc.Col(
             html.H4(race_sr["場名"] + " " + str(race_sr["競走番号"]) + "R " + str(race_sr["距離"]) + "m " + race_sr["競走条件名称"]
-                    + " 馬連荒れ：" + str(race_sr["UMAREN_ARE"]) + " 馬単荒れ：" + str(race_sr["UMATAN_ARE"]) + " 三連複荒れ：" + str(race_sr["SANRENPUKU_ARE"])),
+                    + " 馬連荒れ：" + str(race_sr["UMAREN_ARE_RATE"]) + " 馬単荒れ：" + str(race_sr["UMATAN_ARE_RATE"]) + " 三連複荒れ：" + str(race_sr["SANRENPUKU_ARE_RATE"])),
             style={
                 "height": "100%",
                 "background-color": "white",

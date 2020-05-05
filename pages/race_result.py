@@ -5,7 +5,7 @@ import dash_html_components as html
 import components.graph as gp
 import pandas as pd
 from datetime import datetime as dt
-
+import numpy as np
 
 def race_result():
     return dbc.Container([
@@ -16,7 +16,6 @@ def race_result():
             dcc.DatePickerSingle(
                 id='raceresult-date-picker-single',
                 min_date_allowed=dt(2019, 1, 1),
-                max_date_allowed=dt(2020, 4, 30),
                 initial_visible_month=dt(2020, 4, 1),
                 date=dt(2020, 4, 1).date()
             ),
@@ -36,6 +35,7 @@ def race_result():
 def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     race_sr = race_df.iloc[0]
     raceuma_df = raceuma_df.sort_values("タイム指数")
+    raceuma_df.loc[:, "馬名"] = raceuma_df.apply(lambda x: x["馬名"] + "<br>(" + str(x["単勝人気"]) + "番人気 " + str(x["確定着順"]) + "着 " + str(x["馬券評価順位"]) + "位)", axis=1)
     haraimodoshi_df = pd.DataFrame()
     for key, val in haraimodoshi_dict.items():
         val.loc[:, "式別"] = key
@@ -74,7 +74,7 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     fig10_df = raceuma_df[["馬名", "タイム指数", "単勝オッズ"]]
     fig10_x = fig10_df["馬名"].to_list()
     fig10_y_value1 = fig10_df["タイム指数"].to_list()
-    fig10_y_value2 = fig10_df["単勝オッズ"].to_list()
+    fig10_y_value2 = fig10_df["単勝オッズ"].apply(lambda x: np.log(x)).to_list()
     fig10_y_title1 = "タイム指数"
     fig10_y_title2 = "単勝オッズ"
 
@@ -100,7 +100,7 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     fig11 = gp.simple_line(fig11_df)
     fig11.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
     fig12 = gp.pie_chart(fig12_labels, fig12_values)
-    fig11.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
+    fig12.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
 
     return [dbc.Row([
@@ -136,12 +136,6 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
             dbc.Row([
                 wp.dbc_graph("fig1", 6, fig1),
                 wp.dbc_graph("fig3", 6, fig3),
-            ], className="h-50"),
-            dbc.Row([
-                wp.dbc_title("得点根拠", 12),
-            ], className="h-8"),
-            dbc.Row([
-                wp.dbc_graph("fig2", 12, fig2),
             ], className="h-50"),
             wp.dbc_table("fig4", 16, fig4_df)
         ]

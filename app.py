@@ -206,8 +206,8 @@ def raceinfo_render_raceuma_detail(race_id, umaban, date):
 def raceresult_set_race_list_option(date):
     print(f"---------raceresult_set_race_list_option callback: {date}")
     race_df = GetData.get_race_data(date, date)
-    ba_list_df = race_df[race_df["月日"] == date][["場名", "競走番号", "競走コード", "競走名略称"]]
-    ba_list_df.loc[:, "競走名"] = ba_list_df["場名"] + "_" + ba_list_df["競走番号"].astype(str) + "R_" + ba_list_df["競走名略称"]
+    ba_list_df = race_df[race_df["月日"] == date][["場名", "競走番号", "競走コード", "競走名略称", "投票フラグ"]]
+    ba_list_df.loc[:, "競走名"] = ba_list_df["投票フラグ"].astype(str) + "_" + ba_list_df["場名"] + "_" + ba_list_df["競走番号"].astype(str) + "R_" + ba_list_df["競走名略称"]
     ba_list_df = ba_list_df[["競走名", "競走コード"]].rename(columns={"競走名": "label", "競走コード": "value"})
     ba_list = ba_list_df.drop_duplicates().to_dict(orient='record')
     return ba_list

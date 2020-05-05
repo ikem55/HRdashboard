@@ -17,7 +17,6 @@ def race_info():
             dcc.DatePickerSingle(
                 id='raceinfo-date-picker-single',
                 min_date_allowed=dt(2019, 1, 1),
-                max_date_allowed=dt(2020, 4, 30),
                 initial_visible_month=dt(2020, 4, 1),
                 date=dt(2020, 4, 1).date()
             ),
