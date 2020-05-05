@@ -37,13 +37,17 @@ def toppage_render(raceuma_df, bet_df):
 
     fig1_value = daily_bet_df["合計"].sum()
     fig1_reference = prev_daily_bet_df["合計"].sum()
+
     fig2_value = daily_bet_df["結果"].sum() / daily_bet_df["金額"].sum() * 100
     fig2_reference = prev_daily_bet_df["結果"].sum() / prev_daily_bet_df["金額"].sum() * 100
     fig2_list_sr = daily_bet_df["回収率"].tolist()
+
     fig3_value = daily_rank1_raceuma_df["単勝配当"].mean()
     fig3_reference = prev_daily_rank1_raceuma_df["単勝配当"].mean()
+
     fig4_value = daily_rank1_raceuma_df["複勝配当"].mean()
     fig4_reference = prev_daily_rank1_raceuma_df["複勝配当"].mean()
+
     fig5_df = daily_bet_df[["日付", "合計"]]
     fig5_df.loc[:, "合計"] = fig5_df["合計"].cumsum()
     fig5_x_label = "日付"

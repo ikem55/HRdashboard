@@ -4,6 +4,7 @@ import math
 import numpy as np
 import scipy.stats
 from plotly.subplots import make_subplots
+import itertools
 # https://plotly.com/python/
 
 def data_cards(value, reference):
@@ -486,4 +487,33 @@ def controlling_text_fontsize_with_uniformtext(df):
     fig = px.bar(df, y='value', x='name', text='value')
     fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+    return fig
+
+def basic_funnel_plot(data):
+    fig = px.funnel(data, x='number', y='stage')
+    return fig
+
+def multiple_line_and_bar_chart(x_name , line_y_list, line_y_name, bar_y_list, bar_y_name):
+    fig = go.Figure()
+
+    for i in range(len(line_y_list)):
+        fig.add_trace(
+            go.Scatter(
+                x=x_name,
+                y=line_y_list[i],
+                name=line_y_name[i],
+                yaxis='y1'
+            ))
+
+    for i in range(len(bar_y_list)):
+        fig.add_trace(
+            go.Bar(
+                x=x_name,
+                y=bar_y_list[i],
+                name=bar_y_name[i],
+                yaxis='y2'
+            ))
+    fig.update_layout(
+        yaxis=dict(side='left', showgrid=False, range=[0, max(list(itertools.chain.from_iterable(line_y_list))) * 1.1]),
+        yaxis2=dict(side='right', overlaying='y', range=[0, max(list(itertools.chain.from_iterable(bar_y_list))) * 1.1], showgrid=False))
     return fig

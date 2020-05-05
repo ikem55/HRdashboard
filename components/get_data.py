@@ -48,6 +48,10 @@ class GetData(object):
             temp_df = pd.read_pickle(file)
             raceuma_df = raceuma_df.append(temp_df)
         raceuma_df.loc[:, "馬名"] = raceuma_df.apply(lambda x : str(x["馬番"]).zfill(2) + "_" + x["馬名"], axis=1)
+        raceuma_df.loc[:, "１着"] = raceuma_df["確定着順"].apply(lambda x: 1 if x == 1 else 0)
+        raceuma_df.loc[:, "２着"] = raceuma_df["確定着順"].apply(lambda x: 1 if x == 2 else 0)
+        raceuma_df.loc[:, "３着"] = raceuma_df["確定着順"].apply(lambda x: 1 if x == 3 else 0)
+        raceuma_df.loc[:, "着外"] = raceuma_df["確定着順"].apply(lambda x: 1 if x > 3 else 0)
         raceuma_df = raceuma_df.query(f"年月日 >= '{start_date}' and 年月日 <= '{end_date}'")
         return raceuma_df
 

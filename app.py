@@ -100,6 +100,22 @@ def return_analytics_render_return_analytics(start_date, end_date):
         haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
         return p2.return_analytics_render(raceuma_df, bet_df, haraimodoshi_dict)
 
+## -------------------- kpi_analytics用コールバック -------------------------------##
+@app.callback(
+    Output('kpi_analytics', 'children'),
+    [Input('kpi-analytics-date-picker-range', 'start_date'),
+     Input('kpi-analytics-date-picker-range', 'end_date')]
+)
+def kpi_analytics_render_return_analytics(start_date, end_date):
+    print(f"---------kpi_analytics_render_return_analytics callback: {start_date} {end_date}")
+    if start_date != None and end_date != None:
+        print("render_return_analytics: get_data")
+        race_df = GetData.get_race_data(start_date, end_date)
+        raceuma_df = GetData.get_raceuma_data(start_date, end_date)
+        bet_df = GetData.get_bet_data(start_date, end_date)
+        haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
+        return p3.kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_date)
+
 
 ## -------------------- race_info用コールバック -------------------------------##
 # 日付を指定、指定した場所をリストに表示させる
