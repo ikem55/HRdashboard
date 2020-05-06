@@ -31,7 +31,8 @@ def race_info():
                 value=""
             ),
         ], className="h-8"),
-        html.Div(id="raceinfo-race-detail")
+        dcc.Loading(id="race-info-loading",
+                    children=[html.Div(id="raceinfo-race-detail")])
     ],
         style={"height": "90vh"},
         fluid=True
@@ -41,15 +42,14 @@ def raceuma_info_render(shap_sr):
     shap_sr = pd.concat([shap_sr.head(20), shap_sr.tail(20)])
     fig1_df = pd.DataFrame(shap_sr).reset_index()
     fig1_df.columns = ["name", "value"]
-    print(fig1_df.head(50))
 
     fig1 = gp.controlling_text_fontsize_with_uniformtext(fig1_df)
     fig1.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
-    return [dbc.Row([
+    return dcc.Loading(id="raceuma-info-render-loading", children=[dbc.Row([
                 wp.dbc_graph("fig1", 12, fig1),
             ], className="h-50"),
-        ]
+        ])
 
 def race_info_render(race_df, raceuma_df):
     race_sr = race_df.iloc[0]
@@ -115,7 +115,7 @@ def race_info_render(race_df, raceuma_df):
 
     raceuma_dropdown_option = raceuma_df[["馬名", "馬番"]].rename(
         columns={"馬名": "label", "馬番": "value"}).to_dict(orient='record')
-    return [dbc.Row([
+    return dcc.Loading(id="race-info-render-loading", children=[dbc.Row([
                 wp.dbc_race_info(race_sr),
             ], className="h-8"),
             dbc.Row([
@@ -153,5 +153,5 @@ def race_info_render(race_df, raceuma_df):
             html.Div(id="raceinfo-raceuma-detail"),
             html.Div(id="raceinfo-raceuma-shap"),
             wp.dbc_table("fig7", 16, fig7_df)
-        ]
+        ])
 

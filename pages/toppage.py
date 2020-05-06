@@ -19,7 +19,9 @@ def toppage():
                     min_date_allowed=dt(2019, 1, 1),
                     initial_visible_month=dt.today(),
                 )]),
-                html.Div(id="top_dashoboard")
+            dcc.Loading(id="top-loading",
+                        children=[html.Div(id="top_dashoboard")])
+
         ],
         style={"height": "90vh"},
         fluid=True
@@ -288,7 +290,8 @@ def toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     fig21.update_layout(height=250, margin={'t': 0, 'b': 0, 'l': 0})
 
     print("start rendering")
-    return [dbc.Row([
+    return dcc.Loading(id="top-detail-loading", children=[
+        dbc.Row([
                 wp.dbc_title("回収", 2),
                 wp.dbc_title("回収率", 4),
                 wp.dbc_title("得点１位着順", 2),
@@ -359,3 +362,4 @@ def toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
                 wp.dbc_graph("fig21", 6, fig21),
             ], className="h-50"),
             ]
+                       )

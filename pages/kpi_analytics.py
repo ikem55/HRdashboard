@@ -20,7 +20,8 @@ def kpi_analytics():
                     initial_visible_month=dt(2020, 1, 1),
                 ),
             ], className="h-8"),
-            html.Div(id="kpi_analytics")
+        dcc.Loading(id="kpi-analytics-loading",
+                    children=[html.Div(id="kpi_analytics")])
         ],
         style={"height": "90vh"},
         fluid=True
@@ -228,7 +229,7 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig15.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
 
-    return [dbc.Row([
+    return dcc.Loading(id="kpi-analytics-lender-loading", children=[dbc.Row([
                 wp.dbc_title("得点１位着順", 2),
                 wp.dbc_title("単勝回収率", 2),
                 wp.dbc_title("複勝回収率", 2),
@@ -267,4 +268,4 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
                 wp.dbc_graph("fig13", 2, fig13),
                 wp.dbc_graph("fig14", 2, fig14),
                 wp.dbc_graph("fig15", 2, fig15),
-            ], className="h-50"),]
+            ], className="h-50"),])

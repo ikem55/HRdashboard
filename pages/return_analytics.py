@@ -20,7 +20,8 @@ def return_analytics():
                     min_date_allowed=dt(2019, 1, 1),
                     initial_visible_month=dt(2020, 1, 1),
                 )]),
-                html.Div(id="return_analytics")
+            dcc.Loading(id="return-analytics-loading",
+                        children=[html.Div(id="return_analytics")])
         ],
         style={"height": "90vh"},
         fluid=True
@@ -165,7 +166,7 @@ def return_analytics_render(raceuma_df, bet_df, haraimodoshi_dict):
     fig17.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
 
-    return [dbc.Row([
+    return dcc.Loading(id="return-analytics-render-loading", children=[dbc.Row([
                 wp.dbc_title("単勝", 2),
                 wp.dbc_title("複勝", 2),
                 wp.dbc_title("馬連", 2),
@@ -214,4 +215,4 @@ def return_analytics_render(raceuma_df, bet_df, haraimodoshi_dict):
             dbc.Row([
                 wp.dbc_graph("fig16", 7, fig16),
                 wp.dbc_graph("fig17", 5, fig17),
-            ], className="h-50", ),]
+            ], className="h-50", ),])

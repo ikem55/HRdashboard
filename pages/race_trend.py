@@ -1,4 +1,5 @@
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
 import dash_html_components as html
 import components.webparts as wp
 import components.graph as gp
@@ -9,11 +10,12 @@ import pandas as pd
 
 def race_trend():
     print("race_trend")
-    race_df = GetData.get_race_data_real().query("データ区分 === '7'")
-    raceuma_df = GetData.get_raceuma_data_real().query("データ区分 === '7'")
+    race_df = GetData.get_race_data_real()#.query("データ区分 == '7'")
+    raceuma_df = GetData.get_raceuma_data_real()#.query("データ区分 == '7'")
+
     bet_df = GetData.get_bet_data_real()
     haraimodoshi_dict = GetData.get_haraimodoshi_dict_real()
-    if len(race_df.index) != 0 and len(raceuma_df.index) != 0:
+    if len(race_df.index) == 0 or len(raceuma_df.index) == 0:
         return html.P("no data")
 
     fig1_df = raceuma_df[raceuma_df["馬券評価順位"] == 1].copy()
@@ -246,7 +248,8 @@ def race_trend():
     fig25 = gp.basic_funnel_plot(fig25_data)
     fig25.update_layout(height=300, margin={'t': 0, 'b': 0, 'l': 0})
 
-    return dbc.Container([
+    return dcc.Loading(id="racetrend-loading", children=[
+        dbc.Container([
             dbc.Row([
                 wp.dbc_top_title("todays race trend")
             ], className="h-30"),
@@ -311,4 +314,4 @@ def race_trend():
         ],
         style={"height": "90vh"},
         fluid=True
-    )
+    )])

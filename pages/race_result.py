@@ -26,7 +26,8 @@ def race_result():
                 style={"width": "300px"}
             ),
         ], className="h-8"),
-        html.Div(id="raceresult-race-detail")
+        dcc.Loading(id="race-result-loading",
+                    children=[html.Div(id="raceresult-race-detail")])
     ],
         style={"height": "90vh"},
         fluid=True
@@ -103,7 +104,7 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     fig12.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
 
-    return [dbc.Row([
+    return dcc.Loading(id="race-result-render-loading", children=[dbc.Row([
                 wp.dbc_race_info(race_sr),
                 wp.dbc_race_result(race_sr),
             ], className="h-8"),
@@ -138,5 +139,5 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
                 wp.dbc_graph("fig3", 6, fig3),
             ], className="h-50"),
             wp.dbc_table("fig4", 16, fig4_df)
-        ]
+        ])
 
