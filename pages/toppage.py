@@ -84,10 +84,10 @@ def toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     fig10_gp["単勝"] = fig10_gp["単勝"] * 100
     fig10_gp["複勝"] = fig10_gp["複勝"] * 100
     fig10_x_name = fig10_gp["場名"].tolist()
-    fig10_bar_y_list = [fig10_gp["単勝配当"].tolist(), fig10_gp["複勝配当"].tolist()]
-    fig10_bar_y_name = ["単勝回収率", "複勝回収率"]
-    fig10_line_y_list = [fig10_gp["単勝"].tolist(), fig10_gp["複勝"].tolist()]
-    fig10_line_y_name = ["単勝的中率", "複勝的中率"]
+    fig10_line_y_list = [fig10_gp["単勝配当"].tolist(), fig10_gp["複勝配当"].tolist()]
+    fig10_line_y_name = ["単勝回収率", "複勝回収率"]
+    fig10_bar_y_list = [fig10_gp["単勝"].tolist(), fig10_gp["複勝"].tolist()]
+    fig10_bar_y_name = ["単勝的中率", "複勝的中率"]
 
     fig11_df = bet_df.copy()
     fig11_df["レース"] = 1
@@ -216,28 +216,24 @@ def toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     fig18_df = pd.merge(fig18_umaren_df, race_df[["競走コード", "月日", "年月"]], on ="競走コード")
     fig18_df.loc[:, "月日"] = fig18_df["月日"].apply(lambda x: x.strftime("%y/%m/%d"))
     fig18_df = fig18_df.rename(columns={"月日": "label", "払戻": "value"})
-    #fig18_df.loc[:, "value"] = fig18_df["value"].apply(lambda x: np.log(x))
     fig18_df["color"] = "馬連"
 
     fig19_umatan_df = haraimodoshi_dict["umatan_df"]
     fig19_df = pd.merge(fig19_umatan_df, race_df[["競走コード", "月日", "年月"]], on ="競走コード")
     fig19_df.loc[:, "月日"] = fig19_df["月日"].apply(lambda x: x.strftime("%y/%m/%d"))
     fig19_df = fig19_df.rename(columns={"月日": "label", "払戻": "value"})
-    #fig19_df.loc[:, "value"] = fig19_df["value"].apply(lambda x: np.log(x))
     fig19_df["color"] = "馬単"
 
     fig20_wide_df = haraimodoshi_dict["wide_df"]
     fig20_df = pd.merge(fig20_wide_df, race_df[["競走コード", "月日", "年月"]], on="競走コード")
     fig20_df.loc[:, "月日"] = fig20_df["月日"].apply(lambda x: x.strftime("%y/%m/%d"))
     fig20_df = fig20_df.rename(columns={"月日": "label", "払戻": "value"})
-    #fig20_df.loc[:, "value"] = fig20_df["value"].apply(lambda x: np.log(x))
     fig20_df["color"] = "ワイド"
 
     fig21_sanrenpuku_df = haraimodoshi_dict["sanrenpuku_df"]
     fig21_df = pd.merge(fig21_sanrenpuku_df, race_df[["競走コード", "月日", "年月"]], on="競走コード")
     fig21_df.loc[:, "月日"] = fig21_df["月日"].apply(lambda x: x.strftime("%y/%m/%d"))
     fig21_df = fig21_df.rename(columns={"月日": "label", "払戻": "value"})
-    #fig21_df.loc[:, "value"] = fig21_df["value"].apply(lambda x: np.log(x))
     fig21_df["color"] = "三連複"
 
     fig1 = gp.data_cards(fig1_value, fig1_reference)

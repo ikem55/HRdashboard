@@ -6,6 +6,7 @@ import math
 from datetime import datetime
 from plotly.subplots import make_subplots
 import plotly.figure_factory as ff
+import itertools
 import re
 
 # https://plotly.com/python/
@@ -1812,4 +1813,30 @@ def basic_range_slider_and_range_selectors():
             type="date"
         )
     )
+    return fig
+
+
+def multiple_line_and_bar_chart(x_name , line_y_list, line_y_name, bar_y_list, bar_y_name):
+    fig = go.Figure()
+
+    for i in range(len(line_y_list)):
+        fig.add_trace(
+            go.Scatter(
+                x=x_name,
+                y=line_y_list[i],
+                name=line_y_name[i],
+                yaxis='y1'
+            ))
+
+    for i in range(len(bar_y_list)):
+        fig.add_trace(
+            go.Bar(
+                x=x_name,
+                y=bar_y_list[i],
+                name=bar_y_name[i],
+                yaxis='y2'
+            ))
+    fig.update_layout(
+        yaxis=dict(side='left', showgrid=False, range=[0, max(list(itertools.chain.from_iterable(line_y_list))) * 1.1]),
+        yaxis2=dict(side='right', overlaying='y', range=[0, max(list(itertools.chain.from_iterable(bar_y_list))) * 1.1], showgrid=False))
     return fig

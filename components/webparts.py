@@ -41,7 +41,8 @@ def dbc_title(title, width):
         )
 
 def dbc_graph(graph_id, width, fig):
-    return \
+    if fig != "":
+        return \
         dbc.Col(
             dcc.Graph(
                 id=graph_id,
@@ -55,6 +56,8 @@ def dbc_graph(graph_id, width, fig):
                 "border-width": "10px"
             },
         )
+    else:
+        return dbc.Col(html.P("no data"), width=width)
 
 def dbc_graph_with_click(graph_id, width, fig, selected_data):
     return \

@@ -31,6 +31,12 @@ class GetData(object):
         return sorted(list(target_list))
 
     @classmethod
+    def get_race_data_real(cls):
+        race_df = pd.read_pickle("./static/data/current/race_df.pickle")
+        race_df = cls.calc_race_data(race_df)
+        return race_df
+
+    @classmethod
     def get_race_data(cls, start_date, end_date):
         file_list = cls.get_target_file_list(start_date, end_date, 'race')
         race_df = pd.DataFrame()
@@ -38,6 +44,11 @@ class GetData(object):
             temp_df = pd.read_pickle(file)
             race_df = race_df.append(temp_df)
         race_df = race_df.query(f"月日 >= '{start_date}' and 月日 <= '{end_date}'")
+        race_df = cls.calc_race_data(race_df)
+        return race_df
+
+    @classmethod
+    def calc_race_data(cls, race_df):
         race_df.loc[:, "トラック種別コード"] = race_df["トラック種別コード"].apply(lambda x: cls.trans_track_shubetsu_code(x))
         race_df.loc[:, "競走種別コード"] = race_df["競走種別コード"].apply(lambda x: cls.trans_kyoso_shubetsu_code(x))
         race_df.loc[:, "トラックコード"] = race_df["トラックコード"].apply(lambda x: cls.trans_track_code(x))
@@ -46,12 +57,24 @@ class GetData(object):
         return race_df
 
     @classmethod
+    def get_raceuma_data_real(cls):
+        raceuma_df = pd.read_pickle("./static/data/current/raceuma_df.pickle")
+        raceuma_df = cls.calc_raceuma_df(raceuma_df)
+        return raceuma_df
+
+    @classmethod
     def get_raceuma_data(cls, start_date, end_date):
         file_list = cls.get_target_file_list(start_date, end_date, 'raceuma')
         raceuma_df = pd.DataFrame()
         for file in file_list:
             temp_df = pd.read_pickle(file)
             raceuma_df = raceuma_df.append(temp_df)
+        raceuma_df = cls.calc_raceuma_df(raceuma_df)
+        raceuma_df = raceuma_df.query(f"年月日 >= '{start_date}' and 年月日 <= '{end_date}'")
+        return raceuma_df
+
+    @classmethod
+    def calc_raceuma_df(cls, raceuma_df):
         raceuma_df.loc[:, "馬名"] = raceuma_df.apply(lambda x : str(x["馬番"]).zfill(2) + "_" + x["馬名"], axis=1)
         raceuma_df.loc[:, "１着"] = raceuma_df["確定着順"].apply(lambda x: 1 if x == 1 else 0)
         raceuma_df.loc[:, "２着"] = raceuma_df["確定着順"].apply(lambda x: 1 if x == 2 else 0)
@@ -60,7 +83,6 @@ class GetData(object):
         raceuma_df.loc[:, "性別コード"] = raceuma_df["性別コード"].apply(lambda x: cls.trans_sex_code(x))
         raceuma_df.loc[:, "予想展開"] = raceuma_df["予想展開"].apply(lambda x: cls.trans_yoso_tenkai_code(x))
         raceuma_df.loc[:, "展開コード"] = raceuma_df["展開コード"].apply(lambda x: cls.trans_tenkai_code(x))
-        raceuma_df = raceuma_df.query(f"年月日 >= '{start_date}' and 年月日 <= '{end_date}'")
         return raceuma_df
 
     @classmethod
@@ -70,19 +92,47 @@ class GetData(object):
         return raceuma_prev_df
 
     @classmethod
+    def get_bet_data_real(cls):
+        bet_df = pd.read_pickle("./static/data/current/bet_df.pickle")
+        bet_df = cls.calc_bet_df(bet_df)
+        race_df = cls.get_race_data_real()
+        bet_df = pd.merge(bet_df, race_df[["競走コード", "場名"]], on="競走コード")
+        return bet_df
+
+    @classmethod
+    def calc_bet_df(cls, bet_df):
+        bet_df.loc[:, "結果"] = bet_df["結果"] * bet_df["金額"] / 100
+        bet_df.loc[:, "式別名"] = bet_df["式別"].apply(lambda x : cls.trans_baken_type(x))
+        bet_df.loc[:, "合計"] = bet_df["結果"] - bet_df["金額"]
+        return bet_df
+
+    @classmethod
     def get_bet_data(cls, start_date, end_date):
         file_list = cls.get_target_file_list(start_date, end_date, 'bet')
         bet_df = pd.DataFrame()
         for file in file_list:
             temp_df = pd.read_pickle(file)
             bet_df = bet_df.append(temp_df)
-        bet_df.loc[:, "結果"] = bet_df["結果"] * bet_df["金額"] / 100
-        bet_df.loc[:, "式別名"] = bet_df["式別"].apply(lambda x : cls.trans_baken_type(x))
-        bet_df.loc[:, "合計"] = bet_df["結果"] - bet_df["金額"]
+        bet_df = cls.calc_bet_df(bet_df)
         race_df = cls.get_race_data(start_date, end_date)
         bet_df = pd.merge(bet_df, race_df[["競走コード", "場名"]], on="競走コード")
         bet_df = bet_df.query(f"日付 >= '{start_date}' and 日付 <= '{end_date}'")
         return bet_df
+
+    @classmethod
+    def get_haraimodoshi_dict_real(cls):
+        haraimodoshi_df = pd.read_pickle("./static/data/current/haraimodoshi_df.pickle")
+        tansho_df = cls.get_tansho_df(haraimodoshi_df)
+        fukusho_df = cls.get_fukusho_df(haraimodoshi_df)
+        umaren_df = cls.get_umaren_df(haraimodoshi_df)
+        wide_df = cls.get_wide_df(haraimodoshi_df)
+        umatan_df = cls.get_umatan_df(haraimodoshi_df)
+        sanrenpuku_df = cls.get_sanrenpuku_df(haraimodoshi_df)
+        sanrentan_df = cls.get_sanrentan_df(haraimodoshi_df)
+        dict_haraimodoshi = {"tansho_df": tansho_df, "fukusho_df": fukusho_df, "umaren_df": umaren_df,
+                             "wide_df": wide_df, "umatan_df": umatan_df, "sanrenpuku_df": sanrenpuku_df,
+                             "sanrentan_df": sanrentan_df}
+        return dict_haraimodoshi
 
     @classmethod
     def get_haraimodoshi_table_base(cls, start_date, end_date):
