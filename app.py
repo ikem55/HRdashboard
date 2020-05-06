@@ -23,6 +23,12 @@ import components.calc_data as cd
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 server = flask.Flask(__name__) # define flask app.server
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=server)
+# Since we're adding callbacks to elements that don't exist in the app.layout,
+# Dash will raise an exception to warn us that we might be
+# doing something wrong.
+# In this case, we're adding the elements through a callback, so we can ignore
+# the exception.
+app.config.suppress_callback_exceptions = True
 
 # the style arguments for the sidebar. We use position:fixed and a fixed width
 SIDEBAR_STYLE = {
@@ -81,9 +87,16 @@ def toppage_render_top_dashboard(start_date, end_date):
     print(f"---------toppage_render_top_dashboard callback: {start_date} {end_date}")
     if start_date != None and end_date != None:
         print("render_toppage: get_data")
-        raceuma_df = GetData.get_raceuma_data(start_date, end_date)
+        race_df = GetData.get_race_data(start_date, end_date).query("データ区分 == '7'")
+        raceuma_df = GetData.get_raceuma_data(start_date, end_date).query("データ区分 == '7'")
         bet_df = GetData.get_bet_data(start_date, end_date)
-        return p1.toppage_render(raceuma_df, bet_df)
+        haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
+        if len(race_df.index) != 0 and len(raceuma_df.index) != 0 and len(bet_df.index) != 0 and len(haraimodoshi_dict):
+            return p1.toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict)
+        else:
+            return html.P(f"race_df: {len(race_df.index)} raceuma_df: {len(raceuma_df.index)} , bet_df: {len(bet_df.index)}, haraimodoshi_dict: {len(haraimodoshi_dict)}")
+    else:
+        return html.P("not loading data")
 
 ## -------------------- return_analytics用コールバック -------------------------------##
 @app.callback(
@@ -98,7 +111,12 @@ def return_analytics_render_return_analytics(start_date, end_date):
         raceuma_df = GetData.get_raceuma_data(start_date, end_date)
         bet_df = GetData.get_bet_data(start_date, end_date)
         haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
-        return p2.return_analytics_render(raceuma_df, bet_df, haraimodoshi_dict)
+        if len(raceuma_df.index) != 0 and len(bet_df.index) != 0 and len(haraimodoshi_dict):
+            return p2.return_analytics_render(raceuma_df, bet_df, haraimodoshi_dict)
+        else:
+            return html.P(f"raceuma_df: {len(raceuma_df.index)} , bet_df: {len(bet_df.index)}, haraimodoshi_dict: {len(haraimodoshi_dict)}")
+    else:
+        return html.P("not loading data")
 
 ## -------------------- kpi_analytics用コールバック -------------------------------##
 @app.callback(
@@ -114,8 +132,12 @@ def kpi_analytics_render_return_analytics(start_date, end_date):
         raceuma_df = GetData.get_raceuma_data(start_date, end_date)
         bet_df = GetData.get_bet_data(start_date, end_date)
         haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
-        return p3.kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_date)
-
+        if len(race_df.index) != 0 and  len(raceuma_df.index) != 0 and len(bet_df.index) != 0 and len(haraimodoshi_dict):
+            return p3.kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_date)
+        else:
+            return html.P(f"race_df: {len(race_df.index)} raceuma_df: {len(raceuma_df.index)} , bet_df: {len(bet_df.index)}, haraimodoshi_dict: {len(haraimodoshi_dict)}")
+    else:
+        return html.P("not loading data")
 
 ## -------------------- race_info用コールバック -------------------------------##
 # 日付を指定、指定した場所をリストに表示させる
@@ -179,7 +201,12 @@ def raceinfo_render_race_detail(race_id, date):
         raceuma_df = GetData.get_raceuma_data(date, date)
         this_race_df = race_df[race_df["競走コード"] == race_id]
         this_raceuma_df = raceuma_df[raceuma_df["競走コード"] == race_id]
-        return p5.race_info_render(this_race_df, this_raceuma_df)
+        if len(this_race_df.index) != 0 and  len(this_raceuma_df.index) != 0:
+            return p5.race_info_render(this_race_df, this_raceuma_df)
+        else:
+            return html.P(f"this_race_df: {len(this_race_df.index)} this_raceuma_df: {len(this_raceuma_df.index)}")
+    else:
+        return html.P("not loading data")
 
 # レースＩＤと馬番を指定して馬の詳細情報を表示させる
 @app.callback(
@@ -245,7 +272,12 @@ def raceresult_render_race_detail(race_id, date):
         this_bet_df = bet_df.query(f"競走コード == {race_id}")
         this_haraimodoshi_dict = {"tansho_df": this_tansho_df, "fukusho_df": this_fukusho_df, "umaren_df": this_umaren_df,
                                   "umatan_df": this_umatan_df, "wide_df": this_wide_df, "sanrenpuku_df": this_sanrenpuku_df}
-        return p8.race_result_render(this_race_df, this_raceuma_df, this_bet_df, this_haraimodoshi_dict)
+        if len(this_race_df.index) != 0 and len(this_raceuma_df.index) != 0:
+            return p8.race_result_render(this_race_df, this_raceuma_df, this_bet_df, this_haraimodoshi_dict)
+        else:
+            return html.P(f"this_race_df: {len(this_race_df.index)} this_raceuma_df: {len(this_raceuma_df.index)} this_bet_df: {len(this_bet_df)} this_haraimodoshi_dict: {len(this_haraimodoshi_dict)}")
+    else:
+        return html.P("not loading data")
 
 
 ## ルーティング用コールバック

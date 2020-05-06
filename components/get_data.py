@@ -38,6 +38,11 @@ class GetData(object):
             temp_df = pd.read_pickle(file)
             race_df = race_df.append(temp_df)
         race_df = race_df.query(f"月日 >= '{start_date}' and 月日 <= '{end_date}'")
+        race_df.loc[:, "トラック種別コード"] = race_df["トラック種別コード"].apply(lambda x: cls.trans_track_shubetsu_code(x))
+        race_df.loc[:, "競走種別コード"] = race_df["競走種別コード"].apply(lambda x: cls.trans_kyoso_shubetsu_code(x))
+        race_df.loc[:, "トラックコード"] = race_df["トラックコード"].apply(lambda x: cls.trans_track_code(x))
+        race_df.loc[:, "馬場状態コード"] = race_df["馬場状態コード"].apply(lambda x: cls.trans_baba_jotai_code(x))
+        race_df.loc[:, "波乱度"] = race_df["波乱度"].apply(lambda x: cls.trans_haran_code(x))
         return race_df
 
     @classmethod
@@ -52,15 +57,16 @@ class GetData(object):
         raceuma_df.loc[:, "２着"] = raceuma_df["確定着順"].apply(lambda x: 1 if x == 2 else 0)
         raceuma_df.loc[:, "３着"] = raceuma_df["確定着順"].apply(lambda x: 1 if x == 3 else 0)
         raceuma_df.loc[:, "着外"] = raceuma_df["確定着順"].apply(lambda x: 1 if x > 3 else 0)
+        raceuma_df.loc[:, "性別コード"] = raceuma_df["性別コード"].apply(lambda x: cls.trans_sex_code(x))
+        raceuma_df.loc[:, "予想展開"] = raceuma_df["予想展開"].apply(lambda x: cls.trans_yoso_tenkai_code(x))
+        raceuma_df.loc[:, "展開コード"] = raceuma_df["展開コード"].apply(lambda x: cls.trans_tenkai_code(x))
         raceuma_df = raceuma_df.query(f"年月日 >= '{start_date}' and 年月日 <= '{end_date}'")
         return raceuma_df
 
     @classmethod
     def get_raceuma_prev_df(cls, term_start_date, term_end_date, ketto_toroku_bango_list):
         term_raceuma_df = cls.get_raceuma_data(term_start_date, term_end_date).query("データ区分 =='7'").drop("馬名", axis=1)
-        print(term_raceuma_df.shape)
         raceuma_prev_df = term_raceuma_df[term_raceuma_df["血統登録番号"].isin(ketto_toroku_bango_list)]
-        print(raceuma_prev_df.shape)
         return raceuma_prev_df
 
     @classmethod
@@ -87,98 +93,6 @@ class GetData(object):
             haraimodoshi_df = haraimodoshi_df.append(temp_df)
         haraimodoshi_df = haraimodoshi_df.query(f"データ作成年月日 >= '{start_date}' and データ作成年月日 <= '{end_date}'")
         return haraimodoshi_df
-
-    @classmethod
-    def bk_get_race_data(cls, start_date, end_date):
-        conn_str = (
-            r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\BaoZ\DB\Baoz.MDB;'
-        )
-        cnxn = pyodbc.connect(conn_str)
-        select_sql = 'SELECT データ区分, 競走コード, 月日, 距離, トラック種別コード, 主催者コード, 競走番号, 場コード, 場名, グレードコード, 競走種別コード, 競走条件コード, 発走時刻, 頭数, 天候コード, 前３ハロン, 前４ハロン' \
-                     ', 後３ハロン, 後４ハロン, トラックコード,  馬場状態コード, 前半タイム, 予想計算済み, 予想勝ち指数, ペース, 初出走頭数, 混合, 予想決着指数, 投票フラグ, 波乱度, 馬券発売フラグ, 予想計算状況フラグ, メインレース, タイム指数誤差, 登録頭数, 回次, 日次 FROM レースT WHERE 月日 >= #' + \
-                     start_date + '# AND 月日 <= #' + end_date + '#'
-        df_org = pd.read_sql(select_sql, cnxn)
-        cnxn.close()
-        df = df_org.astype({'トラック種別コード': object, '主催者コード': object, '場コード': object, '競走種別コード': object, '競走条件コード': object,
-                            'トラックコード': object,
-                            '天候コード': object, '馬場状態コード': object, '投票フラグ': object, '波乱度': object, '馬券発売フラグ': object,
-                            '予想計算状況フラグ': object})
-        return_df = df[df["主催者コード"] == 2].copy()
-        return return_df
-
-    @classmethod
-    def bk_get_raceuma_data(cls, start_date, end_date):
-        conn_str = (
-            r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\BaoZ\DB\Baoz.ex.MDB;'
-        )
-        cnxn = pyodbc.connect(conn_str)
-        select_sql = 'SELECT * FROM 出走馬T WHERE 年月日 >= #' + \
-            start_date + '# AND 年月日 <= #' + end_date + '#'
-        df_org = pd.read_sql(select_sql, cnxn)
-        cnxn.close()
-        df = df_org.astype({'血統登録番号': object, '性別コード': object, '展開コード': object, '騎手コード': object, '騎手所属場コード': object,
-                            '見習区分': object, '調教師コード': object, '調教師所属場コード': object, '異常区分コード': object, '前走トラック種別コード':object})
-        return df
-
-    @classmethod
-    def bk_get_bet_table_base(cls, start_date, end_date):
-        conn_str = (
-            r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\BaoZ\DB\MasterDB\BaoZ-Bet.MDB;'
-        )
-        cnxn = pyodbc.connect(conn_str)
-        select_sql = 'SELECT * FROM 投票記録T WHERE 日付 >= #' + \
-            start_date + '# AND 日付 <= #' + end_date + '#'
-        df_org = pd.read_sql(select_sql, cnxn)
-        df_org.loc[:, "結果"] = df_org["結果"] * df_org["金額"] / 100
-        df_org.loc[:, "式別名"] = df_org["式別"].apply(lambda x : cls.trans_baken_type(x))
-        df_org.loc[:, "合計"] = df_org["結果"] - df_org["金額"]
-        race_df = cls.get_race_data(start_date, end_date)
-        df_org = pd.merge(df_org, race_df[["競走コード", "場名"]], on="競走コード")
-        cnxn.close()
-        df = df_org.astype(
-            {'式別': object, 'レース種別': object, 'PAT_ID': object, '投票方法': object})
-        return df
-
-    @classmethod
-    def trans_baken_type(cls, type):
-        if type == 1:
-            return '単勝　'
-        elif type == 2:
-            return '複勝　'
-        elif type == 3:
-            return '枠連　'
-        elif type == 4:
-            return '枠単　'
-        elif type == 5:
-            return '馬連　'
-        elif type == 6:
-            return '馬単　'
-        elif type == 7:
-            return 'ワイド'
-        elif type == 8:
-            return '三連複'
-        elif type == 9:
-            return '三連単'
-        elif type == 0:
-            return '合計　'
-
-    @classmethod
-    def bk_get_haraimodoshi_table_base(cls, start_date, end_date):
-        conn_str = (
-            r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-            r'DBQ=C:\BaoZ\DB\MasterDB\BaoZ-RA.MDB;'
-        )
-        cnxn = pyodbc.connect(conn_str)
-        select_sql = 'SELECT * FROM 払戻T WHERE データ作成年月日 >= #' + \
-            start_date + '# AND データ作成年月日 <= #' + end_date + '#'
-        df_org = pd.read_sql(select_sql, cnxn)
-        cnxn.close()
-        df = df_org.astype({'不成立フラグ': object, '特払フラグ': object, '返還フラグ': object, '返還馬番情報': object, '返還枠番情報': object, '返還同枠情報': object, '単勝馬番1': object, '単勝馬番2': object, '単勝馬番3': object, '複勝馬番1': object, '複勝馬番2': object, '複勝馬番3': object, '複勝馬番4': object, '複勝馬番5': object, '枠連連番1': object, '枠連連番2': object, '枠連連番3': object, '馬連連番1': object, '馬連連番2': object, '馬連連番3': object, 'ワイド連番1': object, 'ワイド連番2': object,
-                            'ワイド連番3': object, 'ワイド連番4': object, 'ワイド連番5': object, 'ワイド連番6': object, 'ワイド連番7': object, '枠単連番1': object, '枠単連番2': object, '枠単連番3': object, '馬単連番1': object, '馬単連番2': object, '馬単連番3': object, '馬単連番4': object, '馬単連番5': object, '馬単連番6': object, '三連複連番1': object, '三連複連番2': object, '三連複連番3': object, '三連単連番1': object, '三連単連番2': object, '三連単連番3': object, '三連単連番4': object, '三連単連番5': object, '三連単連番6': object})
-        return df
 
     @classmethod
     def get_haraimodoshi_dict(cls, start_date, end_date):
@@ -340,3 +254,205 @@ class GetData(object):
         else:
             list_umaban = [int(umaban[0:2]), int(umaban[2:4])]
         return list_umaban
+
+    @classmethod
+    def trans_baken_type(cls, type):
+        if type == 1:
+            return '単勝　'
+        elif type == 2:
+            return '複勝　'
+        elif type == 3:
+            return '枠連　'
+        elif type == 4:
+            return '枠単　'
+        elif type == 5:
+            return '馬連　'
+        elif type == 6:
+            return '馬単　'
+        elif type == 7:
+            return 'ワイド'
+        elif type == 8:
+            return '三連複'
+        elif type == 9:
+            return '三連単'
+        elif type == 0:
+            return '合計　'
+
+    @classmethod
+    def trans_track_shubetsu_code(cls, type):
+        if type == 0:
+            return '芝'
+        elif type == 1:
+            return 'ダート'
+        elif type == 2:
+            return '障害'
+        else:
+            return 'その他'
+
+    @classmethod
+    def trans_track_code(cls, type):
+        if type == 23:
+            return 'ダート・左'
+        elif type == 24:
+            return 'ダート・左'
+        elif type == 25:
+            return 'ダート・左内'
+        elif type == 26:
+            return 'ダート・右外'
+        else:
+            return 'その他'
+
+    @classmethod
+    def trans_kyoso_shubetsu_code(cls, type):
+        if type == 11:
+            return '２歳'
+        elif type == 12:
+            return '３歳'
+        elif type == 13:
+            return '３歳以上'
+        elif type == 14:
+            return '４歳以上'
+        else:
+            return 'その他'
+
+    @classmethod
+    def trans_baba_jotai_code(cls, type):
+        if type == 1:
+            return '良'
+        elif type == 2:
+            return '稍'
+        elif type == 3:
+            return '重'
+        elif type == 4:
+            return '不良'
+        else:
+            return 'その他'
+
+
+    @classmethod
+    def trans_tenko_code(cls, type):
+        if type == 0:
+            return '未設定'
+        if type == 1:
+            return '晴'
+        elif type == 2:
+            return '曇'
+        elif type == 3:
+            return '雨'
+        elif type == 4:
+            return '小雨'
+        elif type == 5:
+            return '雪'
+        elif type == 6:
+            return '小雪'
+        else:
+            return 'その他'
+
+
+    @classmethod
+    def trans_haran_code(cls, type):
+        if type == 1:
+            return '順当'
+        elif type == 2:
+            return '小波乱'
+        elif type == 3:
+            return '波乱'
+        elif type == 4:
+            return '大波乱'
+        else:
+            return 'その他'
+
+
+    @classmethod
+    def trans_sex_code(cls, type):
+        if type == 1:
+            return '牡'
+        elif type == 2:
+            return '牝'
+        elif type == 3:
+            return 'せん'
+        else:
+            return 'その他'
+
+    @classmethod
+    def trans_shozoku_code(cls, type):
+        if type == 1:
+            return '美浦'
+        elif type == 2:
+            return '栗東'
+        elif type == 3:
+            return '地方'
+        elif type == 4:
+            return '外国'
+        else:
+            return 'その他'
+
+    @classmethod
+    def trans_yoso_tenkai_code(cls, type):
+        if type == 1:
+            return '逃げ'
+        elif type == 2:
+            return '先行'
+        elif type == 3:
+            return '差し'
+        elif type == 4:
+            return '追込'
+        else:
+            return 'その他'
+
+    @classmethod
+    def trans_tenkai_code(cls, type):
+        if type == 11:
+            return '落逃切'
+        elif type == 12:
+            return '逃切る'
+        elif type == 13:
+            return '逃粘る'
+        elif type == 14:
+            return '逃一息'
+        elif type == 15:
+            return '逃一杯'
+        elif type == 21:
+            return '先抜出'
+        elif type == 22:
+            return '先行伸'
+        elif type == 23:
+            return '先行粘'
+        elif type == 24:
+            return '先一息'
+        elif type == 25:
+            return '先一杯'
+        elif type == 31:
+            return '好抜出'
+        elif type == 32:
+            return '好位伸'
+        elif type == 33:
+            return '好位侭'
+        elif type == 34:
+            return '好一杯'
+        elif type == 35:
+            return '好位退'
+        elif type == 41:
+            return '中抜出'
+        elif type == 42:
+            return '中位伸'
+        elif type == 43:
+            return '中伸も'
+        elif type == 44:
+            return '中位侭'
+        elif type == 45:
+            return '中一杯'
+        elif type == 51:
+            return '直一気'
+        elif type == 52:
+            return '後方伸'
+        elif type == 53:
+            return '後伸も'
+        elif type == 54:
+            return '後方詰'
+        elif type == 55:
+            return '後追上'
+        elif type == 56:
+            return '後方侭'
+        else:
+            return 'その他'

@@ -313,9 +313,10 @@ def pie_chart(labels, values):
                               hole=.4, sort=False)])
     return fig
 
-def choosing_the_algorithm(df, x, y, color):
+def choosing_the_algorithm(df, x, y, color, max_y):
     fig = px.box(df, x=x, y=y, color=color)
     fig.update_traces(quartilemethod="exclusive")  # or "inclusive", or "linear" by default
+    fig.update_layout(yaxis=dict(range=[0, max_y]))
     return fig
 
 

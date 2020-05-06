@@ -159,7 +159,7 @@ def return_analytics_render(raceuma_df, bet_df, haraimodoshi_dict):
     fig14.update_layout(height=200, margin={'t': 0, 'b': 0, 'l': 0})
     fig15 = gp.pie_chart(fig15_sr.index.values.categories.left.values, fig15_sr.values)
     fig15.update_layout(height=200, margin={'t': 0, 'b': 0, 'l': 0})
-    fig16 = gp.choosing_the_algorithm(fig16_df, fig16_x, fig16_y, fig16_color)
+    fig16 = gp.choosing_the_algorithm(fig16_df, fig16_x, fig16_y, fig16_color, 15)
     fig16.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
     fig17 = gp.styled_categorical_dot_plot(fig17_y, fig17_x1, fig17_x2, fig17_name1, fig17_name2)
     fig17.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
