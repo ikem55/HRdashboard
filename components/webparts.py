@@ -21,8 +21,8 @@ def dbc_top_title(title):
             html.H1(title),
             style={
                 "size": "30px",
-                "background-color": "#1b1935",
-                "color": "white",
+#                "background-color": "#1b1935",
+#                "color": "blak",
                 "textAlign": "center",
             },
         )
@@ -34,7 +34,7 @@ def dbc_title(title, width):
             width=width,
             style={
                 "height": "100%",
-                "background-color": "white",
+#                "background-color": "white",
                 "textAlign": "left",
                 "padding": "10px"
             },
@@ -51,8 +51,8 @@ def dbc_graph(graph_id, width, fig):
             width=width,
             style={
                 "height": "100%",
-                "background-color": "white",
-                "border-color": "white",
+#                "background-color": "white",
+#                "border-color": "white",
                 "border-width": "10px"
             },
         )
@@ -70,8 +70,8 @@ def dbc_graph_with_click(graph_id, width, fig, selected_data):
             width=width,
             style={
                 "height": "100%",
-                "background-color": "white",
-                "border-color": "white",
+#                "background-color": "white",
+#                "border-color": "white",
                 "border-width": "10px"
             },
         )
@@ -91,7 +91,7 @@ def dbc_race_info(race_sr):
                     + " 馬連荒れ：" + str(race_sr["UMAREN_ARE_RATE"]) + " 馬単荒れ：" + str(race_sr["UMATAN_ARE_RATE"]) + " 三連複荒れ：" + str(race_sr["SANRENPUKU_ARE_RATE"])),
             style={
                 "height": "100%",
-                "background-color": "white",
+#                "background-color": "white",
                 "textAlign": "left",
                 "padding": "10px"
             },
@@ -104,7 +104,7 @@ def dbc_race_result(race_sr):
             html.H4(str(race_sr["天候コード"]) + " " + str(race_sr["馬場状態コード"]) + " " + race_sr["ペース"]),
             style={
                 "height": "100%",
-                "background-color": "white",
+#                "background-color": "white",
                 "textAlign": "left",
                 "padding": "10px"
             },

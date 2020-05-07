@@ -71,7 +71,7 @@ def simple_waterfall_chart(x_list, y_list):
     ))
 
     fig.update_layout(
-        showlegend=True
+        showlegend=False
     )
     return fig
 
@@ -92,17 +92,13 @@ def buble_chart(x_list, y_list, z_list, name_list, x_title, y_title):
     fig.update_layout(
         xaxis=dict(
             title=x_title,
-            gridcolor='white',
             type='log',
             gridwidth=2,
         ),
         yaxis=dict(
             title=y_title,
-            gridcolor='white',
             gridwidth=2,
         ),
-        paper_bgcolor='rgb(243, 243, 243)',
-        plot_bgcolor='rgb(243, 243, 243)',
     )
     return fig
 
@@ -113,7 +109,8 @@ def multi_bullet(type_list, value_list):
     for i in range(count):
         fig.add_trace(go.Indicator(
             mode="number+gauge", value=value_list[i],
-            domain={'x': [0.25, 1], 'y': [0.08 + height_rate * i,  height_rate * (i+1)] },
+            domain={'x': [0.25, 1],
+                    'y': [0.08 + height_rate * i,  height_rate * (i+1)] },
             title={'text': type_list[i]},
             gauge={
                 'shape': "bullet",
@@ -126,7 +123,8 @@ def multi_bullet(type_list, value_list):
                     {'range': [0, 80], 'color': "gray"},
                     {'range': [80, 100], 'color': "lightgray"}],
                 'bar': {'color': "black"}}))
-    fig.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
+    fig.update_layout(#height=400,
+                      margin={'t': 0, 'b': 0, 'l': 0})
     return fig
 
 def label_lines_with_annotations(multi_df):
@@ -170,7 +168,6 @@ def label_lines_with_annotations(multi_df):
             showline=True,
             showgrid=False,
             showticklabels=True,
-            linecolor='rgb(204, 204, 204)',
             linewidth=2,
             ticks='outside',
             tickfont=dict(
@@ -192,7 +189,7 @@ def label_lines_with_annotations(multi_df):
             r=20,
             t=110,
         ),
-        showlegend=False,
+        showlegend=True,
         plot_bgcolor='white'
     )
 
@@ -209,6 +206,7 @@ def label_lines_with_annotations(multi_df):
                                 showarrow=False))
 
     fig.update_layout(annotations=annotations)
+    fig.update_layout(legend_orientation="h")
     return fig
 
 
@@ -218,6 +216,7 @@ def visualizing_the_distribution(df):
                        range_x=[0, 5000],
                        opacity=0.4)#, hover_data=df.columns)
     fig.update_layout(barmode='overlay')
+    fig.update_layout(legend_orientation="h")
     return fig
 
 
@@ -230,9 +229,7 @@ def bar_chart_with_line_plot(x, y_value1, y_value2, y_title1, y_title2):
         x=y_value1,
         y=x,
         marker=dict(
-            color='rgba(50, 171, 96, 0.6)',
             line=dict(
-                color='rgba(50, 171, 96, 1.0)',
                 width=1),
         ),
         name=y_title1,
@@ -242,7 +239,6 @@ def bar_chart_with_line_plot(x, y_value1, y_value2, y_title1, y_title2):
     fig.append_trace(go.Scatter(
         x=y_value2, y=x,
         mode='lines+markers',
-        line_color='rgb(128, 0, 128)',
         name=y_title2,
     ), 1, 2)
 
@@ -251,36 +247,27 @@ def bar_chart_with_line_plot(x, y_value1, y_value2, y_title1, y_title2):
             showgrid=False,
             showline=False,
             showticklabels=True,
-            domain=[0, 0.85],
         ),
         yaxis2=dict(
             showgrid=False,
             showline=True,
             showticklabels=False,
-            linecolor='rgba(102, 102, 102, 0.8)',
             linewidth=2,
-            domain=[0, 0.85],
         ),
         xaxis=dict(
             zeroline=False,
             showline=False,
             showticklabels=True,
             showgrid=True,
-            domain=[0, 0.42],
         ),
         xaxis2=dict(
             zeroline=False,
             showline=False,
             showticklabels=True,
             showgrid=True,
-            domain=[0.47, 1],
             side='top',
             dtick=25000,
         ),
-        legend=dict(x=0.029, y=1.038, font_size=10),
-        margin=dict(l=100, r=20, t=70, b=70),
-        paper_bgcolor='rgb(248, 248, 255)',
-        plot_bgcolor='rgb(248, 248, 255)',
     )
 
     annotations = []
@@ -295,16 +282,17 @@ def bar_chart_with_line_plot(x, y_value1, y_value2, y_title1, y_title2):
                                 y=xd, x=ydn,
                                 text=ydn,
                                 font=dict(family='Arial', size=12,
-                                          color='rgb(128, 0, 128)'),
+                                          ),
                                 showarrow=False))
         # labeling the bar net worth
         annotations.append(dict(xref='x1', yref='y1',
                                 y=xd, x=yd,
                                 text=yd,
                                 font=dict(family='Arial', size=12,
-                                          color='rgb(50, 171, 96)'),
+                                          ),
                                 showarrow=False))
     fig.update_layout(annotations=annotations)
+    fig.update_layout(legend_orientation="h")
     return fig
 
 
@@ -317,6 +305,7 @@ def choosing_the_algorithm(df, x, y, color, max_y):
     fig = px.box(df, x=x, y=y, color=color)
     fig.update_traces(quartilemethod="exclusive")  # or "inclusive", or "linear" by default
     fig.update_layout(yaxis=dict(range=[0, max_y]))
+    fig.update_layout(legend_orientation="h")
     return fig
 
 
@@ -327,18 +316,10 @@ def styled_categorical_dot_plot(y, x1, x2, name1, name2):
         x=x1,
         y=y,
         name=name1,
-        marker=dict(
-            color='rgba(156, 165, 196, 0.95)',
-            line_color='rgba(156, 165, 196, 1.0)',
-        )
     ))
     fig.add_trace(go.Scatter(
         x=x2, y=y,
         name=name2,
-        marker=dict(
-            color='rgba(204, 204, 204, 0.95)',
-            line_color='rgba(217, 217, 217, 1.0)'
-        )
     ))
 
     fig.update_traces(mode='markers', marker=dict(line_width=1, symbol='circle', size=16))
@@ -347,12 +328,9 @@ def styled_categorical_dot_plot(y, x1, x2, name1, name2):
         xaxis=dict(
             showgrid=False,
             showline=True,
-            linecolor='rgb(102, 102, 102)',
-            tickfont_color='rgb(102, 102, 102)',
             showticklabels=True,
             dtick=10,
             ticks='outside',
-            tickcolor='rgb(102, 102, 102)',
         ),
         margin=dict(l=140, r=40, b=50, t=80),
         legend=dict(
@@ -360,18 +338,17 @@ def styled_categorical_dot_plot(y, x1, x2, name1, name2):
             yanchor='middle',
             xanchor='right',
         ),
-        width=800,
-        height=600,
-        paper_bgcolor='white',
-        plot_bgcolor='white',
         hovermode='closest',
     )
+    fig.update_layout(legend_orientation="h")
     return fig
 
 def basic_horizontal_bar_chart(df):
     # name, label, valueのDFを作成
     fig = px.bar(df, x="value", y="name", color="label", orientation='h',
                  height=400)
+    fig.update_layout(legend_orientation="h")
+
     return fig
 
 def basic_dot_plot(x, y_value1, y_value2, y_title1, y_title2):
@@ -397,37 +374,30 @@ def basic_dot_plot(x, y_value1, y_value2, y_title1, y_title2):
             showgrid=False,
             showline=False,
             showticklabels=True,
-            domain=[0, 0.85],
         ),
         yaxis2=dict(
             showgrid=False,
             showline=True,
             showticklabels=False,
-            linecolor='rgba(102, 102, 102, 0.8)',
             linewidth=2,
-            domain=[0, 0.85],
         ),
         xaxis=dict(
             zeroline=False,
             showline=False,
             showticklabels=True,
             showgrid=True,
-            domain=[0, 0.42],
         ),
         xaxis2=dict(
             zeroline=False,
             showline=False,
             showticklabels=True,
             showgrid=True,
-            domain=[0.47, 1],
             side='top',
             dtick=25000,
         ),
-        legend=dict(x=0.029, y=1.038, font_size=10),
         margin=dict(l=100, r=20, t=70, b=70),
-        paper_bgcolor='rgb(248, 248, 255)',
-        plot_bgcolor='rgb(248, 248, 255)',
     )
+    fig.update_layout(legend_orientation="h")
 
     return fig
 
@@ -457,6 +427,7 @@ def basic_horizontal_box_plot(names, values):
     for i in range(len(names)):
         # Use x instead of y argument for horizontal plot
         fig.add_trace(go.Box(x=values[i], name=names[i]))
+    fig.update_layout(showlegend=False)
     return fig
 
 def add_steps_and_threshold(value):
@@ -480,14 +451,14 @@ def add_steps_and_threshold(value):
 def simple_line(df):
     # x=label, y=value
     fig = px.line(df, x="label", y="value")
-    fig.update_yaxes(rangemode="tozero")
+    fig.update_layout(yaxis=dict(range=[int(min(df["value"].tolist())) * 0.95, int(max(df["value"].tolist())) * 1.05]))
     return fig
 
 
 def controlling_text_fontsize_with_uniformtext(df):
     fig = px.bar(df, y='value', x='name', text='value')
     fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
-    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', yaxis=dict(range=[-0.6, 0.6]))
     return fig
 
 def basic_funnel_plot(data):
@@ -517,4 +488,5 @@ def multiple_line_and_bar_chart(x_name , line_y_list, line_y_name, bar_y_list, b
     fig.update_layout(
         yaxis=dict(side='left', showgrid=False, range=[0, max(list(itertools.chain.from_iterable(line_y_list))) * 1.1]),
         yaxis2=dict(side='right', overlaying='y', range=[0, max(list(itertools.chain.from_iterable(bar_y_list))) * 1.1], showgrid=False))
+    fig.update_layout(legend_orientation="h")
     return fig

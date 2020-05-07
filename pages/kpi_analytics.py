@@ -7,19 +7,20 @@ import components.graph as gp
 
 from datetime import datetime as dt
 import pandas as pd
+import datetime
 
 def kpi_analytics():
     return dbc.Container([
             dbc.Row([
-                wp.dbc_top_title("kpi analytics")
-            ], className="h-30"),
-            dbc.Row([
                 dcc.DatePickerRange(
                     id='kpi-analytics-date-picker-range',
-                    min_date_allowed=dt(2020, 1, 1),
-                    initial_visible_month=dt(2020, 1, 1),
+                    min_date_allowed=dt(2019, 12, 1),
+                    initial_visible_month=dt.today(),
+                    start_date=datetime.date(2020, 4, 30),
+                    end_date=datetime.date(dt.now().year, dt.now().month, dt.now().day)
                 ),
-            ], className="h-8"),
+                wp.dbc_top_title("kpi analytics")
+            ], className="h-30"),
         dcc.Loading(id="kpi-analytics-loading",
                     children=[html.Div(id="kpi_analytics")])
         ],
@@ -28,40 +29,61 @@ def kpi_analytics():
     )
 
 def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_date):
+    raceuma_df.loc[:, "競走馬コード"] = raceuma_df.apply(lambda x : str(x["競走コード"]) + str(x["馬番"]).zfill(2), axis=1)
+
+    # 得点１位着順
     fig1_df = raceuma_df[raceuma_df["馬券評価順位"] == 1].copy()
     fig1_df.loc[:, "確定着順"] = fig1_df["確定着順"].apply(lambda x: str(x) + "着" if x in (1,2,3) else "着外")
     fig1_gp = fig1_df[["確定着順", "競走コード"]].groupby("確定着順").count().reset_index()
     fig1_gp.columns = ["labels", "values"]
     fig1_labels = fig1_gp["labels"].tolist()
     fig1_values = fig1_gp["values"].tolist()
+    fig1 = gp.pie_chart(fig1_labels, fig1_values)
+    fig1.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 単勝回収率
     fig2_df = raceuma_df[raceuma_df["馬券評価順位"] == 1].copy()
     fig2_df_diff = fig2_df[fig2_df["年月日"] != end_date]
     fig2_value = fig2_df["単勝配当"].mean()
     fig2_reference = fig2_df_diff["単勝配当"].mean()
+    fig2 = gp.add_steps_threshold_anda_delta(fig2_value, fig2_reference)
+    fig2.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 複勝回収率
     fig3_df = raceuma_df[raceuma_df["馬券評価順位"] == 1].copy()
     fig3_df_diff = fig3_df[fig3_df["年月日"] != end_date]
     fig3_value = fig3_df["複勝配当"].mean()
     fig3_reference = fig3_df_diff["複勝配当"].mean()
+    fig3 = gp.add_steps_threshold_anda_delta(fig3_value, fig3_reference)
+    fig3.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # １番人気
     fig4_df = raceuma_df[raceuma_df["単勝人気"] == 1].copy()
     fig4_df.loc[:, "確定着順"] = fig4_df["確定着順"].apply(lambda x: str(x) + "着" if x in (1,2,3) else "着外")
     fig4_gp = fig4_df[["確定着順", "競走コード"]].groupby("確定着順").count().reset_index()
     fig4_gp.columns = ["labels", "values"]
     fig4_labels = fig4_gp["labels"].tolist()
     fig4_values = fig4_gp["values"].tolist()
+    fig4 = gp.pie_chart(fig4_labels, fig4_values)
+    fig4.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 単勝回収率
     fig5_df = raceuma_df[raceuma_df["単勝人気"] == 1].copy()
     fig5_df_diff = fig5_df[fig5_df["年月日"] != end_date]
     fig5_value = fig5_df["単勝配当"].mean()
     fig5_reference = fig5_df_diff["単勝配当"].mean()
+    fig5 = gp.add_steps_threshold_anda_delta(fig5_value, fig5_reference)
+    fig5.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 複勝回収率
     fig6_df = raceuma_df[raceuma_df["単勝人気"] == 1].copy()
     fig6_df_diff = fig6_df[fig6_df["年月日"] != end_date]
     fig6_value = fig6_df["複勝配当"].mean()
     fig6_reference = fig6_df_diff["複勝配当"].mean()
+    fig6 = gp.add_steps_threshold_anda_delta(fig6_value, fig6_reference)
+    fig6.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 場所別単複回収率・的中率
     fig7_df = raceuma_df[raceuma_df["馬券評価順位"] == 1].copy()
     fig7_df = pd.merge(race_df[["競走コード", "場名"]], fig7_df[["競走コード", "単勝配当", "複勝配当", "確定着順"]], on="競走コード" )
     fig7_df.loc[:, "単勝"] = fig7_df["確定着順"].apply(lambda x: 1 if x == 1 else 0)
@@ -74,7 +96,10 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig7_bar_y_name = ["単勝回収率", "複勝回収率"]
     fig7_line_y_list = [fig7_gp["単勝"].tolist(), fig7_gp["複勝"].tolist()]
     fig7_line_y_name = ["単勝的中率", "複勝的中率"]
+    fig7 = gp.multiple_line_and_bar_chart(fig7_x_name, fig7_line_y_list,fig7_line_y_name, fig7_bar_y_list, fig7_bar_y_name)
+    fig7.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 場所別馬券回収率・的中率
     fig8_df = bet_df.copy()
     fig8_df["レース"] = 1
     fig8_df.loc[:, "的中"] = fig8_df["結果"].apply(lambda x: 1 if x > 0 else 0)
@@ -86,9 +111,10 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig8_line_y_name = ["回収率", "的中率"]
     fig8_bar_y_list = [fig8_gp["金額"].tolist(), fig8_gp["結果"].tolist()]
     fig8_bar_y_name = ["金額", "結果"]
+    fig8 = gp.multiple_line_and_bar_chart(fig8_x_name, fig8_line_y_list, fig8_line_y_name, fig8_bar_y_list, fig8_bar_y_name)
+    fig8.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
-    raceuma_df.loc[:, "競走馬コード"] = raceuma_df.apply(lambda x : str(x["競走コード"]) + str(x["馬番"]).zfill(2), axis=1)
-
+    # "馬連的中1
     fig10_base = race_df.query("UMAREN_ARE >= 50 and 場名 in ('園田','笠松','高知','水沢','盛岡','川崎','船橋','大井','門別')")["競走コード"].astype(str).apply(lambda x: x[:11])
     fig10_base_set = set(fig10_base)
     fig10_jiku1 = raceuma_df.query("馬券評価順位 <= 2 and 得点 >= 51 and JIKU_RATE >= 47 and WIN_RATE >= 57 and 確定着順 in (1,2)")["競走馬コード"]
@@ -106,7 +132,10 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig10_number = [len(fig10_level1), len(fig10_level2) , len(fig10_level3), len(fig10_level4)]
     fig10_stage = ["対象レース数", "軸１通過", "軸２通過", "配当通過"]
     fig10_data = dict(number=fig10_number, stage=fig10_stage)
+    fig10 = gp.basic_funnel_plot(fig10_data)
+    fig10.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 馬連的中2
     fig11_base = race_df.query("UMAREN_ARE < 50 and 場名 in ('園田','笠松','高知','佐賀','水沢','盛岡','川崎','名古屋','門別')")["競走コード"].astype(str).apply(lambda x: x[:11])
     fig11_base_set = set(fig11_base)
     fig11_jiku1 = raceuma_df.query("馬券評価順位 <= 2 and 得点 >= 53 and 予想人気 <= 5 and デフォルト得点 >= 51 and JIKU_RATE >= 54 and JIKU_RANK <= 3 and WIN_RATE >= 57 and WIN_RANK <= 2 and 確定着順 in (1,2)")["競走馬コード"]
@@ -124,7 +153,10 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig11_number = [len(fig11_level1), len(fig11_level2) , len(fig11_level3), len(fig11_level4)]
     fig11_stage = ["対象レース数", "軸１通過", "軸２通過", "配当通過"]
     fig11_data = dict(number=fig11_number, stage=fig11_stage)
+    fig11 = gp.basic_funnel_plot(fig11_data)
+    fig11.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 馬単的中1
     fig12_base = race_df.query("場名 in ('園田','笠松','金沢','高知','水沢','川崎','船橋','名古屋','門別')")["競走コード"].astype(str).apply(lambda x: x[:11])
     fig12_base_set = set(fig12_base)
     fig12_jiku1 = raceuma_df.query("得点 >= 48 and 馬券評価順位 <= 5 and JIKU_RATE >= 50 and WIN_RATE >= 45 and 確定着順 == 1")["競走馬コード"]
@@ -142,7 +174,10 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig12_number = [len(fig12_level1), len(fig12_level2) , len(fig12_level3), len(fig12_level4)]
     fig12_stage = ["対象レース数", "軸１通過", "軸２通過", "配当通過"]
     fig12_data = dict(number=fig12_number, stage=fig12_stage)
+    fig12 = gp.basic_funnel_plot(fig12_data)
+    fig12.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 馬単的中2
     fig13_base = race_df.query("場名 in ('浦和','園田','笠松','高知','佐賀','水沢','盛岡','川崎','船橋','大井','門別')")["競走コード"].astype(str).apply(lambda x: x[:11])
     fig13_base_set = set(fig13_base)
     fig13_jiku1 = raceuma_df.query("得点 >= 54 and 馬券評価順位 == 1 and デフォルト得点 >= 53 and JIKU_RATE >= 55 and WIN_RANK <= 2 and 確定着順 == 1")["競走馬コード"]
@@ -160,7 +195,10 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig13_number = [len(fig13_level1), len(fig13_level2) , len(fig13_level3), len(fig13_level4)]
     fig13_stage = ["対象レース数", "軸１通過", "軸２通過", "配当通過"]
     fig13_data = dict(number=fig13_number, stage=fig13_stage)
+    fig13 = gp.basic_funnel_plot(fig13_data)
+    fig13.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # 馬単的中3
     fig14_base = race_df.query("場名 in ('浦和','園田','笠松','高知','水沢','盛岡','川崎','大井')")["競走コード"].astype(str).apply(lambda x: x[:11])
     fig14_base_set = set(fig14_base)
     fig14_jiku1 = raceuma_df.query("得点 >= 43 and 馬券評価順位 <= 8 and WIN_RATE >= 47 and ANA_RANK <= 7 and 確定着順 == 1")["競走馬コード"]
@@ -178,7 +216,10 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig14_number = [len(fig14_level1), len(fig14_level2) , len(fig14_level3), len(fig14_level4)]
     fig14_stage = ["対象レース数", "軸１通過", "軸２通過", "配当通過"]
     fig14_data = dict(number=fig14_number, stage=fig14_stage)
+    fig14 = gp.basic_funnel_plot(fig14_data)
+    fig14.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
+    # ワイド的中1
     fig15_base = race_df.query("場名 in ('笠松','佐賀','水沢','盛岡','川崎','大井','姫路','名古屋','門別')")["競走コード"].astype(str).apply(lambda x: x[:11])
     fig15_base_set = set(fig15_base)
     fig15_jiku1 = raceuma_df.query("得点 >= 51 and デフォルト得点 <= 55 and JIKU_RANK <= 6 and WIN_RANK <= 4 and 確定着順 in (1,2,3)")["競走馬コード"]
@@ -196,35 +237,6 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig15_number = [len(fig15_level1), len(fig15_level2) , len(fig15_level3), len(fig15_level4)]
     fig15_stage = ["対象レース数", "軸１通過", "軸２通過", "配当通過"]
     fig15_data = dict(number=fig15_number, stage=fig15_stage)
-
-    fig1 = gp.pie_chart(fig1_labels, fig1_values)
-    fig1.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
-    fig2 = gp.add_steps_threshold_anda_delta(fig2_value, fig2_reference)
-    fig2.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
-    fig3 = gp.add_steps_threshold_anda_delta(fig3_value, fig3_reference)
-    fig3.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
-    fig4 = gp.pie_chart(fig4_labels, fig4_values)
-    fig4.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
-    fig5 = gp.add_steps_threshold_anda_delta(fig5_value, fig5_reference)
-    fig5.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
-    fig6 = gp.add_steps_threshold_anda_delta(fig6_value, fig6_reference)
-    fig6.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
-
-    fig7 = gp.multiple_line_and_bar_chart(fig7_x_name, fig7_line_y_list,fig7_line_y_name, fig7_bar_y_list, fig7_bar_y_name)
-    fig7.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-    fig8 = gp.multiple_line_and_bar_chart(fig8_x_name, fig8_line_y_list, fig8_line_y_name, fig8_bar_y_list, fig8_bar_y_name)
-    fig8.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
-    fig10 = gp.basic_funnel_plot(fig10_data)
-    fig10.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-    fig11 = gp.basic_funnel_plot(fig11_data)
-    fig11.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-    fig12 = gp.basic_funnel_plot(fig12_data)
-    fig12.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-    fig13 = gp.basic_funnel_plot(fig13_data)
-    fig13.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-    fig14 = gp.basic_funnel_plot(fig14_data)
-    fig14.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
     fig15 = gp.basic_funnel_plot(fig15_data)
     fig15.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 

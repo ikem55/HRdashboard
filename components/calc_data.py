@@ -19,7 +19,7 @@ def calc_cut_sr(sr, cut_list):
 
 def get_weekly_summary_bet_df(bet_df):
     weekly_summary_bet_df = bet_df[["日付", "式別", "式別名", "金額", "結果", "合計"]]
-    weekly_summary_bet_df.loc[:, "年月"] = weekly_summary_bet_df["日付"].apply(lambda x: x.strftime("%Y%m%d"))
+    weekly_summary_bet_df.loc[:, "年月"] = weekly_summary_bet_df["日付"].apply(lambda x: x.strftime("%Y/%m/%d"))
     weekly_summary_bet_df = weekly_summary_bet_df.groupby(["年月", "式別名"]).sum().groupby(level=1).cumsum()
     weekly_summary_bet_df.loc[:, "回収率"] = round(weekly_summary_bet_df["結果"] / weekly_summary_bet_df["金額"] * 100, 1)
     return weekly_summary_bet_df
@@ -65,30 +65,67 @@ def get_daily_rank1_raceuma_df(raceuma_df):
     return daily_rank1_raceuma_df.sort_values("年月日")
 
 
-def get_shap_sr(race_id, raceuma_df, umaban):
+def get_shap_race_df(race_id, race_df, date, target_flag):
     # データ取得
     # race_id = 22005014410
-    base_exp_data = pd.read_pickle("./static/intermediate/lb_v5_predict/raceuma_lgm/20200430_exp_data.pkl")
+    str_date = date.replace("-","")
+    base_exp_data = pd.read_pickle(f"./static/data/current/lbr_v1/{str_date}_exp_data.pkl")
+    filter_exp_data = base_exp_data[base_exp_data["RACE_KEY"] == race_id]
+    exp_data = filter_exp_data.drop(["NENGAPPI", "主催者コード"], axis=1).reset_index(drop=True)
+    base_race_df = race_df[["競走コード"]].sort_values("競走コード").reset_index()
+    exp_data = exp_data[exp_data["RACE_KEY"] == race_id].drop("RACE_KEY", axis=1)
+
+    # target encoding
+    label_list = exp_data.select_dtypes(include=object).columns.tolist()
+
+    for label in label_list:
+        exp_data.loc[:, label] = _target_encoding(exp_data[label], target_flag + '_tr_' + label, "lbr_v1")
+
+    # 不要列削除
+    with open(f'./static/model/lbr_v1/race_lgm/race_lgm_主催者コード_2_{target_flag}_feat_columns.pickle', 'rb') as f:
+        imp_features = pickle.load(f)
+
+    exp_data = exp_data.replace(np.inf, np.nan).fillna(exp_data.replace(np.inf, np.nan).mean()).reset_index(drop=True)
+    exp_data = exp_data[imp_features]#.to_numpy()
+
+    with open(f'./static/model/lbr_v1/race_lgm/race_lgm_主催者コード_2_{target_flag}.pickle', 'rb') as f:
+        model = pickle.load(f)
+    shap.initjs()
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(exp_data)
+    shap_df = pd.DataFrame(shap_values[1], columns=exp_data.columns)
+    shap_df["expected_value"] = explainer.expected_value[1]
+    exp_data["expected_value"] = "expected_value"
+    shap_df = pd.concat([base_race_df, shap_df], axis=1)
+    shap_sr = shap_df[shap_df["競走コード"] == race_id].drop(["index", "競走コード"], axis=1).iloc[0]
+    shap_df = pd.DataFrame({"col_name": exp_data.columns, "value": shap_sr, "org_value": exp_data.iloc[0]})
+    shap_df.loc[:, "name"] = shap_df.apply(lambda x: x["col_name"] + "_" + str(x["org_value"]), axis=1)
+    return shap_df[["name", "value"]]
+
+def get_shap_raceuma_df(race_id, raceuma_df, umaban, date, target_flag):
+    # データ取得
+    # race_id = 22005014410
+    str_date = date.replace("-","")
+    base_exp_data = pd.read_pickle(f"./static/data/current/lb_v5/{str_date}_exp_data.pkl")
     filter_exp_data = base_exp_data[base_exp_data["RACE_KEY"] == race_id]
     exp_data = filter_exp_data.drop(["RACE_KEY", "NENGAPPI", "主催者コード"], axis=1).reset_index(drop=True)
     base_raceuma_df = raceuma_df[["競走コード", "馬番"]].sort_values("馬番").reset_index()
     exp_data = exp_data[exp_data["UMABAN"] == umaban]
 
     # target encoding
-    target_flag = "WIN_FLAG"
     label_list = exp_data.select_dtypes(include=object).columns.tolist()
 
     for label in label_list:
-        exp_data.loc[:, label] = _target_encoding(exp_data[label], target_flag + '_tr_' + label)
+        exp_data.loc[:, label] = _target_encoding(exp_data[label], target_flag + '_tr_' + label, "lb_v5")
 
     # 不要列削除
-    with open('./static/model/lb_v5/raceuma_lgm/raceuma_lgm_主催者コード_2_WIN_FLAG_feat_columns.pickle', 'rb') as f:
+    with open(f'./static/model/lb_v5/raceuma_lgm/raceuma_lgm_主催者コード_2_{target_flag}_feat_columns.pickle', 'rb') as f:
         imp_features = pickle.load(f)
 
     exp_data = exp_data.replace(np.inf, np.nan).fillna(exp_data.replace(np.inf, np.nan).mean()).reset_index(drop=True)
     exp_data = exp_data[imp_features]#.to_numpy()
 
-    with open('./static/model/lb_v5/raceuma_lgm/raceuma_lgm_主催者コード_2_WIN_FLAG.pickle', 'rb') as f:
+    with open(f'./static/model/lb_v5/raceuma_lgm/raceuma_lgm_主催者コード_2_{target_flag}.pickle', 'rb') as f:
         model = pickle.load(f)
     shap.initjs()
     explainer = shap.TreeExplainer(model)
@@ -98,16 +135,9 @@ def get_shap_sr(race_id, raceuma_df, umaban):
     exp_data["expected_value"] = "expected_value"
     shap_df = pd.concat([base_raceuma_df, shap_df], axis=1)
     shap_sr = shap_df[shap_df["馬番"] == umaban].drop(["index", "競走コード", "馬番"], axis=1).iloc[0]#.sort_values()
-    pd.set_option('display.max_columns', 3000)
-    pd.set_option('display.max_rows', 3000)
-    print(len(shap_sr))
-    print(exp_data.shape)
-    print(exp_data)
-    print(shap_sr)
-    shap_df = pd.DataFrame({"col_name": exp_data.columns, "shap_value": shap_sr, "org_value": exp_data.iloc[0]})
+    shap_df = pd.DataFrame({"col_name": exp_data.columns, "value": shap_sr, "org_value": exp_data.iloc[0]})
     shap_df.loc[:, "name"] = shap_df.apply(lambda x: x["col_name"] + "_" + str(x["org_value"]), axis=1)
-    print(shap_df)
-    return shap_sr
+    return shap_df[["name", "value"]]
 
 def load_dict(dict_name, dict_folder):
     """ エンコードした辞書を呼び出す
@@ -118,7 +148,7 @@ def load_dict(dict_name, dict_folder):
     with open(dict_folder + dict_name + '.pkl', 'rb') as f:
         return pickle.load(f)
 
-def _target_encoding(sr, dict_name):
-    tr = load_dict(dict_name, "./static/dict/lb_v5/")
+def _target_encoding(sr, dict_name, model_type):
+    tr = load_dict(dict_name, f"./static/dict/{model_type}/")
     sr_tr = tr.transform(sr)
     return sr_tr

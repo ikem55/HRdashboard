@@ -20,9 +20,11 @@ import pages.race_result as p8
 from components.get_data import GetData
 import components.calc_data as cd
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 server = flask.Flask(__name__) # define flask app.server
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=server)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SUPERHERO], server=server, meta_tags=[
+        {"name": "viewport", "content": "width=device-width, initial-scale=1.0"}
+    ])
 # Since we're adding callbacks to elements that don't exist in the app.layout,
 # Dash will raise an exception to warn us that we might be
 # doing something wrong.
@@ -36,26 +38,25 @@ SIDEBAR_STYLE = {
     "top": 0,
     "left": 0,
     "bottom": 0,
-    "width": "16rem",
+    "width": "9rem",
     "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
+#    "background-color": "#f8f9fa",
 }
 
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
 CONTENT_STYLE = {
-    "margin-left": "18rem",
+    "margin-left": "9rem",
     "margin-right": "2rem",
     "padding": "2rem 1rem",
 }
 
 sidebar = html.Div(
     [
-        html.H2("LocalHR Dashboard", className="display-4"),
-        html.Hr(),
         html.P(
-            "ダッシュボード", className="lead"
+            "local DB", className="lead"
         ),
+        html.Hr(),
         dbc.Nav(
             [
                 dbc.NavLink("TOP", href="/page-1", id="page-1-link"),
@@ -75,7 +76,7 @@ sidebar = html.Div(
 )
 
 content = html.Div(id="page-content", style=CONTENT_STYLE)
-app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
+app.layout = dcc.Loading(id="toppage-loading", children=[html.Div([dcc.Location(id="url"), sidebar, content])])
 
 ## -------------------- toppage用コールバック -------------------------------##
 @app.callback(
@@ -91,7 +92,7 @@ def toppage_render_top_dashboard(start_date, end_date):
         raceuma_df = GetData.get_raceuma_data(start_date, end_date).query("データ区分 == '7'")
         bet_df = GetData.get_bet_data(start_date, end_date)
         haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
-        if len(race_df.index) != 0 and len(raceuma_df.index) != 0 and len(bet_df.index) != 0 and len(haraimodoshi_dict):
+        if len(race_dfｃｍｄ.index) != 0 and len(raceuma_df.index) != 0 and len(bet_df.index) != 0 and len(haraimodoshi_dict):
             return p1.toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict)
         else:
             return html.P(f"race_df: {len(race_df.index)} raceuma_df: {len(raceuma_df.index)} , bet_df: {len(bet_df.index)}, haraimodoshi_dict: {len(haraimodoshi_dict)}")
@@ -128,8 +129,8 @@ def kpi_analytics_render_return_analytics(start_date, end_date):
     print(f"---------kpi_analytics_render_return_analytics callback: {start_date} {end_date}")
     if start_date != None and end_date != None:
         print("render_return_analytics: get_data")
-        race_df = GetData.get_race_data(start_date, end_date)
-        raceuma_df = GetData.get_raceuma_data(start_date, end_date)
+        race_df = GetData.get_race_data(start_date, end_date).query("データ区分 == '7'")
+        raceuma_df = GetData.get_raceuma_data(start_date, end_date).query("データ区分 == '7'")
         bet_df = GetData.get_bet_data(start_date, end_date)
         haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
         if len(race_df.index) != 0 and  len(raceuma_df.index) != 0 and len(bet_df.index) != 0 and len(haraimodoshi_dict):
@@ -202,7 +203,10 @@ def raceinfo_render_race_detail(race_id, date):
         this_race_df = race_df[race_df["競走コード"] == race_id]
         this_raceuma_df = raceuma_df[raceuma_df["競走コード"] == race_id]
         if len(this_race_df.index) != 0 and  len(this_raceuma_df.index) != 0:
-            return p5.race_info_render(this_race_df, this_raceuma_df)
+            shap_df_umaren_are = cd.get_shap_race_df(race_id, this_race_df, date, "UMAREN_ARE")
+            shap_df_umatan_are = cd.get_shap_race_df(race_id, this_race_df, date, "UMATAN_ARE")
+            shap_df_sanrenpuku_are = cd.get_shap_race_df(race_id, this_race_df, date, "SANRENPUKU_ARE")
+            return p5.race_info_render(this_race_df, this_raceuma_df, shap_df_umaren_are, shap_df_umatan_are, shap_df_sanrenpuku_are)
         else:
             return html.P(f"this_race_df: {len(this_race_df.index)} this_raceuma_df: {len(this_raceuma_df.index)}")
     else:
@@ -220,8 +224,10 @@ def raceinfo_render_raceuma_detail(race_id, umaban, date):
     if type(umaban) == int:
         raceuma_df = GetData.get_raceuma_data(date, date)
         this_raceuma_df = raceuma_df[raceuma_df["競走コード"] == race_id]
-        shap_sr = cd.get_shap_sr(race_id, this_raceuma_df, umaban)
-        return p5.raceuma_info_render(shap_sr)
+        shap_df_win = cd.get_shap_raceuma_df(race_id, this_raceuma_df, umaban, date, "WIN_FLAG")
+        shap_df_jiku = cd.get_shap_raceuma_df(race_id, this_raceuma_df, umaban, date, "JIKU_FLAG")
+        shap_df_are = cd.get_shap_raceuma_df(race_id, this_raceuma_df, umaban, date, "ANA_FLAG")
+        return p5.raceuma_info_render(shap_df_win, shap_df_jiku, shap_df_are)
 
 
 ## -------------------- race_result用コールバック -------------------------------##
