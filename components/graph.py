@@ -305,7 +305,7 @@ def choosing_the_algorithm(df, x, y, color, max_y):
     fig = px.box(df, x=x, y=y, color=color)
     fig.update_traces(quartilemethod="exclusive")  # or "inclusive", or "linear" by default
     fig.update_layout(yaxis=dict(range=[0, max_y]))
-    fig.update_layout(legend_orientation="h")
+    fig.update_layout(showlegend=False)
     return fig
 
 
@@ -345,6 +345,7 @@ def styled_categorical_dot_plot(y, x1, x2, name1, name2):
 
 def basic_horizontal_bar_chart(df):
     # name, label, valueのDFを作成
+    df['value'] = df['value'].map("{:,.2f}".format)
     fig = px.bar(df, x="value", y="name", color="label", orientation='h',
                  height=400)
     fig.update_layout(legend_orientation="h")
@@ -456,6 +457,7 @@ def simple_line(df):
 
 
 def controlling_text_fontsize_with_uniformtext(df):
+    df['value'] = df['value'].map("{:,.3f}".format)
     fig = px.bar(df, y='value', x='name', text='value')
     fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', yaxis=dict(range=[-0.6, 0.6]))

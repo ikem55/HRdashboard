@@ -49,6 +49,7 @@ class GetData(object):
 
     @classmethod
     def calc_race_data(cls, race_df):
+        race_df.loc[:, "競走条件名称"] = race_df["競走条件名称"].apply(lambda x: x.strip())
         race_df.loc[:, "トラック種別コード"] = race_df["トラック種別コード"].apply(lambda x: cls.trans_track_shubetsu_code(x))
         race_df.loc[:, "競走種別コード"] = race_df["競走種別コード"].apply(lambda x: cls.trans_kyoso_shubetsu_code(x))
         race_df.loc[:, "トラックコード"] = race_df["トラックコード"].apply(lambda x: cls.trans_track_code(x))

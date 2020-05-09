@@ -22,7 +22,7 @@ import components.calc_data as cd
 
 #external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 server = flask.Flask(__name__) # define flask app.server
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SUPERHERO], server=server, meta_tags=[
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SKETCHY], server=server, meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"}
     ])
 # Since we're adding callbacks to elements that don't exist in the app.layout,
@@ -40,7 +40,6 @@ SIDEBAR_STYLE = {
     "bottom": 0,
     "width": "9rem",
     "padding": "2rem 1rem",
-#    "background-color": "#f8f9fa",
 }
 
 # the styles for the main content position it to the right of the sidebar and
@@ -92,7 +91,7 @@ def toppage_render_top_dashboard(start_date, end_date):
         raceuma_df = GetData.get_raceuma_data(start_date, end_date).query("データ区分 == '7'")
         bet_df = GetData.get_bet_data(start_date, end_date)
         haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
-        if len(race_dfｃｍｄ.index) != 0 and len(raceuma_df.index) != 0 and len(bet_df.index) != 0 and len(haraimodoshi_dict):
+        if len(race_df.index) != 0 and len(raceuma_df.index) != 0 and len(bet_df.index) != 0 and len(haraimodoshi_dict):
             return p1.toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict)
         else:
             return html.P(f"race_df: {len(race_df.index)} raceuma_df: {len(raceuma_df.index)} , bet_df: {len(bet_df.index)}, haraimodoshi_dict: {len(haraimodoshi_dict)}")
@@ -239,8 +238,14 @@ def raceinfo_render_raceuma_detail(race_id, umaban, date):
 def raceresult_set_race_list_option(date):
     print(f"---------raceresult_set_race_list_option callback: {date}")
     race_df = GetData.get_race_data(date, date)
-    ba_list_df = race_df[race_df["月日"] == date][["場名", "競走番号", "競走コード", "競走名略称", "投票フラグ"]]
-    ba_list_df.loc[:, "競走名"] = ba_list_df["投票フラグ"].astype(str) + "_" + ba_list_df["場名"] + "_" + ba_list_df["競走番号"].astype(str) + "R_" + ba_list_df["競走名略称"]
+    bet_df = GetData.get_bet_data(date, date).groupby("競走コード").sum().reset_index()
+    if len(bet_df.index) != 0:
+        race_df = pd.merge(race_df, bet_df, on="競走コード", how="left")
+        race_df.loc[:, "投票チェック"] = race_df.apply(lambda x: "[的中]" if x["結果"] > 0 else ("[外れ]" if x["金額"] > 0 else ""), axis=1)
+    else:
+        race_df["投票チェック"] = ""
+    ba_list_df = race_df[race_df["月日"] == date][["場名", "競走番号", "競走コード", "競走名略称", "投票フラグ", "投票チェック"]]
+    ba_list_df.loc[:, "競走名"] = ba_list_df["投票チェック"]+ ba_list_df["場名"] + "_" + ba_list_df["競走番号"].astype(str) + "R_" + ba_list_df["競走名略称"]
     ba_list_df = ba_list_df[["競走名", "競走コード"]].rename(columns={"競走名": "label", "競走コード": "value"})
     ba_list = ba_list_df.drop_duplicates().to_dict(orient='record')
     return ba_list

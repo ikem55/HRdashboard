@@ -99,18 +99,20 @@ def get_shap_race_df(race_id, race_df, date, target_flag):
     shap_df = pd.concat([base_race_df, shap_df], axis=1)
     shap_sr = shap_df[shap_df["競走コード"] == race_id].drop(["index", "競走コード"], axis=1).iloc[0]
     shap_df = pd.DataFrame({"col_name": exp_data.columns, "value": shap_sr, "org_value": exp_data.iloc[0]})
+    shap_df['org_value'] = shap_df['org_value'].apply(lambda x: format(x, ',.3f') if type(x)==float else x)
     shap_df.loc[:, "name"] = shap_df.apply(lambda x: x["col_name"] + "_" + str(x["org_value"]), axis=1)
     return shap_df[["name", "value"]]
 
 def get_shap_raceuma_df(race_id, raceuma_df, umaban, date, target_flag):
     # データ取得
     # race_id = 22005014410
+    print(f"race_id:{race_id},  raceuma_df: {len(raceuma_df.index)}, umaban: {umaban}, date: {date}, target_flag: {target_flag}")
     str_date = date.replace("-","")
     base_exp_data = pd.read_pickle(f"./static/data/current/lb_v5/{str_date}_exp_data.pkl")
     filter_exp_data = base_exp_data[base_exp_data["RACE_KEY"] == race_id]
     exp_data = filter_exp_data.drop(["RACE_KEY", "NENGAPPI", "主催者コード"], axis=1).reset_index(drop=True)
-    base_raceuma_df = raceuma_df[["競走コード", "馬番"]].sort_values("馬番").reset_index()
     exp_data = exp_data[exp_data["UMABAN"] == umaban]
+    org_exp_data = exp_data.copy()
 
     # target encoding
     label_list = exp_data.select_dtypes(include=object).columns.tolist()
@@ -124,6 +126,7 @@ def get_shap_raceuma_df(race_id, raceuma_df, umaban, date, target_flag):
 
     exp_data = exp_data.replace(np.inf, np.nan).fillna(exp_data.replace(np.inf, np.nan).mean()).reset_index(drop=True)
     exp_data = exp_data[imp_features]#.to_numpy()
+    org_exp_data = org_exp_data[imp_features]
 
     with open(f'./static/model/lb_v5/raceuma_lgm/raceuma_lgm_主催者コード_2_{target_flag}.pickle', 'rb') as f:
         model = pickle.load(f)
@@ -132,10 +135,11 @@ def get_shap_raceuma_df(race_id, raceuma_df, umaban, date, target_flag):
     shap_values = explainer.shap_values(exp_data)
     shap_df = pd.DataFrame(shap_values[1], columns=exp_data.columns)
     shap_df["expected_value"] = explainer.expected_value[1]
-    exp_data["expected_value"] = "expected_value"
-    shap_df = pd.concat([base_raceuma_df, shap_df], axis=1)
-    shap_sr = shap_df[shap_df["馬番"] == umaban].drop(["index", "競走コード", "馬番"], axis=1).iloc[0]#.sort_values()
-    shap_df = pd.DataFrame({"col_name": exp_data.columns, "value": shap_sr, "org_value": exp_data.iloc[0]})
+
+    org_exp_data["expected_value"] = "expected_value"
+    shap_df = pd.concat([shap_df.T, org_exp_data.T], axis=1).reset_index()
+    shap_df.columns = ["col_name", "value", "org_value"]
+    shap_df['org_value'] = shap_df['org_value'].apply(lambda x: format(x, ',.3f') if type(x)==float else x)
     shap_df.loc[:, "name"] = shap_df.apply(lambda x: x["col_name"] + "_" + str(x["org_value"]), axis=1)
     return shap_df[["name", "value"]]
 
