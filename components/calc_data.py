@@ -13,7 +13,6 @@ def calc_return_rate(bet_df):
         return 0
 
 def calc_cut_sr(sr, cut_list):
-    # print(cut_sr.index.values.categories.left.values) # seriesのラベルを取得する際に手間がかかる
     cut_sr = pd.cut(sr, cut_list, right=False).value_counts(sort=False)
     return cut_sr
 
@@ -105,8 +104,6 @@ def get_shap_race_df(race_id, race_df, date, target_flag):
 
 def get_shap_raceuma_df(race_id, raceuma_df, umaban, date, target_flag):
     # データ取得
-    # race_id = 22005014410
-    print(f"race_id:{race_id},  raceuma_df: {len(raceuma_df.index)}, umaban: {umaban}, date: {date}, target_flag: {target_flag}")
     str_date = date.replace("-","")
     base_exp_data = pd.read_pickle(f"./static/data/current/lb_v5/{str_date}_exp_data.pkl")
     filter_exp_data = base_exp_data[base_exp_data["RACE_KEY"] == race_id]

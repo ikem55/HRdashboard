@@ -53,7 +53,7 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     fig3.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
     # テーブル
-    fig4_df = raceuma_df[["枠番", "馬番", "馬名", "性別コード", "タイム", "タイム指数", "デフォルト得点", "得点", "馬券評価順位", "単勝オッズ",
+    fig4_df = raceuma_df[["枠番", "馬番", "馬名表用", "性別コード", "タイム", "タイム指数", "デフォルト得点", "得点", "馬券評価順位", "単勝オッズ",
                           "単勝人気", "複勝オッズ1", "複勝オッズ2", "展開コード", "騎手名", "馬齢", "調教師名", "負担重量", "馬体重", "確定着順",
                           "コーナー順位1", "コーナー順位2", "コーナー順位3", "コーナー順位4", "上がりタイム", "所属", "得点V3", "WIN_RATE",
                           "JIKU_RATE", "ANA_RATE", "WIN_RANK", "JIKU_RANK", "ANA_RANK", "SCORE", "SCORE_RANK", "CK1_RATE",

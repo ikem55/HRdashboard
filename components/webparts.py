@@ -8,6 +8,7 @@ import numpy as np
 import dash_table.FormatTemplate as FormatTemplate
 import components.calc_data as cd
 import components.graph as gp
+import plotly.graph_objects as go
 
 def cp_data_cards_return(daily_bet_df, prev_daily_bet_df):
     # 回収
@@ -132,6 +133,72 @@ def cp_multiple_line_and_bar_chart_place_bet_return(bet_df):
 
 
 
+def cp_parallel_categories_diagram_umaren_1(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["UMAREN_ARE"] >= 50 and x["場名"] in ('園田','笠松','高知','水沢','盛岡','川崎','船橋','大井','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umaren_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 3000 and x["払戻"] <= 9000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["馬券評価順位"] <= 2 and x["得点"] >= 51 and x["JIKU_RATE"] >= 47 and x["WIN_RATE"] >= 57 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["馬券評価順位"] <= 2 and x["得点"] >= 51 and x["JIKU_RATE"] >= 47 and x["WIN_RATE"] >= 57 and x["確定着順"] in (1,2) else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 40 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 40 and x["確定着順"] in (1,2) else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df = group_df[["場名", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+
+    level0_dim = go.parcats.Dimension(values=group_df["場名"], categoryorder='category ascending', label="場名")
+    level1_dim = go.parcats.Dimension(values=group_df["馬１対象"], categoryorder='category ascending', label="馬１対象")
+    level2_dim = go.parcats.Dimension(values=group_df["馬１的中"], categoryorder='category ascending', label="馬１的中")
+    level3_dim = go.parcats.Dimension(values=group_df["馬２対象"], categoryorder='category ascending', label="馬２対象")
+    level4_dim = go.parcats.Dimension(values=group_df["馬２的中"], categoryorder='category ascending', label="馬２的中")
+    level5_dim = go.parcats.Dimension(values=group_df["的中フラグ"], categoryorder='category ascending', label="的中フラグ")
+    level6_dim = go.parcats.Dimension(values=group_df["払戻フラグ"], categoryorder='category ascending', label="払戻フラグ")
+
+    fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
+                                     hoverinfo='count',
+                                     arrangement='freeform')])
+    return fig
+
+
+def cp_stacked_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["UMAREN_ARE"] >= 50 and x["場名"] in ('園田','笠松','高知','水沢','盛岡','川崎','船橋','大井','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umaren_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 3000 and x["払戻"] <= 9000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["馬券評価順位"] <= 2 and x["得点"] >= 51 and x["JIKU_RATE"] >= 47 and x["WIN_RATE"] >= 57 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["馬券評価順位"] <= 2 and x["得点"] >= 51 and x["JIKU_RATE"] >= 47 and x["WIN_RATE"] >= 57 and x["確定着順"] in (1,2) else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 40 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 40 and x["確定着順"] in (1,2) else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df.loc[:, "総レース数"] = True
+    group_df = group_df[["場名", "総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+    basho_list = group_df["場名"].drop_duplicates().tolist()
+
+    fig = go.Figure()
+    for basho in basho_list:
+        fig.add_trace(go.Funnel(
+            name=basho,
+            y=["総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"],
+            text=[basho + "UMAREN_ARE >= 50", "馬券評価順位 <= 2 and 得点 >= 51 and JIKU_RATE >= 47 and WIN_RATE >= 57", "確定着順 in (1,2)", "得点 >= 40", "確定着順 in (1,2)", "的中", "払戻 >= 3000 and 払戻 <= 9000"],
+            x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
+            textinfo="value+percent initial"
+        ))
+    return fig
+
+
 def cp_basic_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict):
     # 馬連的中1
     fig12_base = race_df.query("UMAREN_ARE >= 50 and 場名 in ('園田','笠松','高知','水沢','盛岡','川崎','船橋','大井','門別')")["競走コード"].astype(str).apply(lambda x: x[:11])
@@ -153,6 +220,75 @@ def cp_basic_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict):
     fig12_data = dict(number=fig12_number, stage=fig12_stage)
     fig12 = gp.basic_funnel_plot(fig12_data)
     return fig12
+
+
+
+def cp_parallel_categories_diagram_umaren_2(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["UMAREN_ARE"] < 50 and x["場名"] in ('園田','笠松','高知','佐賀','水沢','盛岡','川崎','名古屋','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umaren_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 2000 and x["払戻"] <= 5000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["馬券評価順位"] <= 2 and x["得点"] >= 53 and x["予想人気"] <= 5 and x["デフォルト得点"] >= 51 and x["JIKU_RATE"] >= 54 and x["JIKU_RANK"] <= 3 and x["WIN_RATE"] >= 57 and x["WIN_RANK"] <= 2 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["馬券評価順位"] <= 2 and x["得点"] >= 53 and x["予想人気"] <= 5 and x["デフォルト得点"] >= 51 and x["JIKU_RATE"] >= 54 and x["JIKU_RANK"] <= 3 and x["WIN_RATE"] >= 57 and x["WIN_RANK"] <= 2 and x["確定着順"] in (1,2) else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["JIKU_RANK"] <= 9 and x["予想人気"] >= 4 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["JIKU_RANK"] <= 9 and x["予想人気"] >= 4 and x["確定着順"] in (1,2) else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df = group_df[["場名", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+
+    level0_dim = go.parcats.Dimension(values=group_df["場名"], categoryorder='category ascending', label="場名")
+    level1_dim = go.parcats.Dimension(values=group_df["馬１対象"], categoryorder='category ascending', label="馬１対象")
+    level2_dim = go.parcats.Dimension(values=group_df["馬１的中"], categoryorder='category ascending', label="馬１的中")
+    level3_dim = go.parcats.Dimension(values=group_df["馬２対象"], categoryorder='category ascending', label="馬２対象")
+    level4_dim = go.parcats.Dimension(values=group_df["馬２的中"], categoryorder='category ascending', label="馬２的中")
+    level5_dim = go.parcats.Dimension(values=group_df["的中フラグ"], categoryorder='category ascending', label="的中フラグ")
+    level6_dim = go.parcats.Dimension(values=group_df["払戻フラグ"], categoryorder='category ascending', label="払戻フラグ")
+
+    fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
+                                     hoverinfo='count',
+                                     arrangement='freeform')])
+    return fig
+
+
+def cp_stacked_funnel_plot_umaren_2(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["UMAREN_ARE"] < 50 and x["場名"] in ('園田','笠松','高知','佐賀','水沢','盛岡','川崎','名古屋','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umaren_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 2000 and x["払戻"] <= 5000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["馬券評価順位"] <= 2 and x["得点"] >= 53 and x["予想人気"] <= 5 and x["デフォルト得点"] >= 51 and x["JIKU_RATE"] >= 54 and x["JIKU_RANK"] <= 3 and x["WIN_RATE"] >= 57 and x["WIN_RANK"] <= 2 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["馬券評価順位"] <= 2 and x["得点"] >= 53 and x["予想人気"] <= 5 and x["デフォルト得点"] >= 51 and x["JIKU_RATE"] >= 54 and x["JIKU_RANK"] <= 3 and x["WIN_RATE"] >= 57 and x["WIN_RANK"] <= 2 and x["確定着順"] in (1,2) else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["JIKU_RANK"] <= 9 and x["予想人気"] >= 4 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["JIKU_RANK"] <= 9 and x["予想人気"] >= 4 and x["確定着順"] in (1,2) else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df.loc[:, "総レース数"] = True
+    group_df = group_df[["場名", "総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+    basho_list = group_df["場名"].drop_duplicates().tolist()
+
+    fig = go.Figure()
+    for basho in basho_list:
+        fig.add_trace(go.Funnel(
+            name=basho,
+            y=["総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"],
+            text=[basho + "UMAREN_ARE < 50", "馬券評価順位 <= 2 and 得点 >= 53 and 予想人気 <= 5 and デフォルト得点 >= 51 and JIKU_RATE >= 54 and JIKU_RANK <= 3 and WIN_RATE >= 57 and WIN_RANK <= 2", "確定着順 in (1,2)",
+                  "得点 >= 43 and 馬券評価順位 <= 8 and JIKU_RANK <= 9 and 予想人気 >= 4", "確定着順 in (1,2)", "的中", "払戻 >= 2000 and 払戻 <= 5000"],
+            x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
+            textinfo="value+percent initial"
+        ))
+    return fig
+
 
 def cp_basic_funnel_plot_umaren_2(race_df, raceuma_df, haraimodoshi_dict):
     # 馬連的中2
@@ -176,6 +312,73 @@ def cp_basic_funnel_plot_umaren_2(race_df, raceuma_df, haraimodoshi_dict):
     fig13 = gp.basic_funnel_plot(fig13_data)
     return fig13
 
+
+def cp_parallel_categories_diagram_umatan_1(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["場名"] in ('園田','笠松','金沢','高知','水沢','川崎','船橋','名古屋','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umatan_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 5000 and x["払戻"] <= 14000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 48 and x["馬券評価順位"] <= 5 and x["JIKU_RATE"] >= 50 and x["WIN_RATE"] >= 45 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 48 and x["馬券評価順位"] <= 5 and x["JIKU_RATE"] >= 50 and x["WIN_RATE"] >= 45 and x["確定着順"] == 1 else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 6 and x["デフォルト得点"] >= 45 and x["JIKU_RATE"] >= 42 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 6 and x["デフォルト得点"] >= 45 and x["JIKU_RATE"] >= 42 and x["確定着順"] == 2 else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df = group_df[["場名", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+
+    level0_dim = go.parcats.Dimension(values=group_df["場名"], categoryorder='category ascending', label="場名")
+    level1_dim = go.parcats.Dimension(values=group_df["馬１対象"], categoryorder='category ascending', label="馬１対象")
+    level2_dim = go.parcats.Dimension(values=group_df["馬１的中"], categoryorder='category ascending', label="馬１的中")
+    level3_dim = go.parcats.Dimension(values=group_df["馬２対象"], categoryorder='category ascending', label="馬２対象")
+    level4_dim = go.parcats.Dimension(values=group_df["馬２的中"], categoryorder='category ascending', label="馬２的中")
+    level5_dim = go.parcats.Dimension(values=group_df["的中フラグ"], categoryorder='category ascending', label="的中フラグ")
+    level6_dim = go.parcats.Dimension(values=group_df["払戻フラグ"], categoryorder='category ascending', label="払戻フラグ")
+
+    fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
+                                     hoverinfo='count',
+                                     arrangement='freeform')])
+    return fig
+
+
+def cp_stacked_funnel_plot_umatan_1(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["場名"] in ('園田','笠松','金沢','高知','水沢','川崎','船橋','名古屋','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umatan_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 5000 and x["払戻"] <= 14000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 48 and x["馬券評価順位"] <= 5 and x["JIKU_RATE"] >= 50 and x["WIN_RATE"] >= 45 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 48 and x["馬券評価順位"] <= 5 and x["JIKU_RATE"] >= 50 and x["WIN_RATE"] >= 45 and x["確定着順"] == 1 else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 6 and x["デフォルト得点"] >= 45 and x["JIKU_RATE"] >= 42 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 6 and x["デフォルト得点"] >= 45 and x["JIKU_RATE"] >= 42 and x["確定着順"] == 2 else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df.loc[:, "総レース数"] = True
+    group_df = group_df[["場名", "総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+    basho_list = group_df["場名"].drop_duplicates().tolist()
+
+    fig = go.Figure()
+    for basho in basho_list:
+        fig.add_trace(go.Funnel(
+            name=basho,
+            y=["総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"],
+            text=[basho, "得点 >= 48 and 馬券評価順位 <= 5 and JIKU_RATE >= 50 and WIN_RATE >= 45", "確定着順 == 1",
+                  "得点 >= 43 and 馬券評価順位 <= 6 and デフォルト得点 >= 45 and JIKU_RATE >= 42", "確定着順 == 2", "的中", "払戻 >= 5000 and 払戻 <= 14000"],
+            x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
+            textinfo="value+percent initial"
+        ))
+    return fig
+
 def cp_basic_funnel_plot_umatan_1(race_df, raceuma_df, haraimodoshi_dict):
     # 馬単的中1
     fig14_base = race_df.query("場名 in ('園田','笠松','金沢','高知','水沢','川崎','船橋','名古屋','門別')")["競走コード"].astype(str).apply(lambda x: x[:11])
@@ -197,6 +400,73 @@ def cp_basic_funnel_plot_umatan_1(race_df, raceuma_df, haraimodoshi_dict):
     fig14_data = dict(number=fig14_number, stage=fig14_stage)
     fig14 = gp.basic_funnel_plot(fig14_data)
     return fig14
+
+
+def cp_parallel_categories_diagram_umatan_2(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["場名"] in ('浦和','園田','笠松','高知','佐賀','水沢','盛岡','川崎','船橋','大井','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umatan_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 2000 and x["払戻"] <= 6000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 54 and x["馬券評価順位"] == 1 and x["デフォルト得点"] >= 53 and x["JIKU_RATE"] >= 55 and x["WIN_RANK"] <= 2 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 54 and x["馬券評価順位"] == 1 and x["デフォルト得点"] >= 53 and x["JIKU_RATE"] >= 55 and x["WIN_RANK"] <= 2 and x["確定着順"] == 1 else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["確定着順"] == 2 else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df = group_df[["場名", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+
+    level0_dim = go.parcats.Dimension(values=group_df["場名"], categoryorder='category ascending', label="場名")
+    level1_dim = go.parcats.Dimension(values=group_df["馬１対象"], categoryorder='category ascending', label="馬１対象")
+    level2_dim = go.parcats.Dimension(values=group_df["馬１的中"], categoryorder='category ascending', label="馬１的中")
+    level3_dim = go.parcats.Dimension(values=group_df["馬２対象"], categoryorder='category ascending', label="馬２対象")
+    level4_dim = go.parcats.Dimension(values=group_df["馬２的中"], categoryorder='category ascending', label="馬２的中")
+    level5_dim = go.parcats.Dimension(values=group_df["的中フラグ"], categoryorder='category ascending', label="的中フラグ")
+    level6_dim = go.parcats.Dimension(values=group_df["払戻フラグ"], categoryorder='category ascending', label="払戻フラグ")
+
+    fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
+                                     hoverinfo='count',
+                                     arrangement='freeform')])
+    return fig
+
+
+def cp_stacked_funnel_plot_umatan_2(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["場名"] in ('浦和','園田','笠松','高知','佐賀','水沢','盛岡','川崎','船橋','大井','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umatan_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 2000 and x["払戻"] <= 6000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 54 and x["馬券評価順位"] == 1 and x["デフォルト得点"] >= 53 and x["JIKU_RATE"] >= 55 and x["WIN_RANK"] <= 2 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 54 and x["馬券評価順位"] == 1 and x["デフォルト得点"] >= 53 and x["JIKU_RATE"] >= 55 and x["WIN_RANK"] <= 2 and x["確定着順"] == 1 else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["確定着順"] == 2 else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df.loc[:, "総レース数"] = True
+    group_df = group_df[["場名", "総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+    basho_list = group_df["場名"].drop_duplicates().tolist()
+
+    fig = go.Figure()
+    for basho in basho_list:
+        fig.add_trace(go.Funnel(
+            name=basho,
+            y=["総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"],
+            text=[basho, "得点 >= 54 and 馬券評価順位 == 1 and デフォルト得点 >= 53 and JIKU_RATE >= 55 and WIN_RANK <= 2", "確定着順 == 1",
+                  "得点 >= 43 and 馬券評価順位 <= 8" ,"確定着順 == 2", "的中", "払戻 >= 2000 and 払戻 <= 6000"],
+            x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
+            textinfo="value+percent initial"
+        ))
+    return fig
 
 def cp_basic_funnel_plot_umatan_2(race_df, raceuma_df, haraimodoshi_dict):
     # 馬単的中2
@@ -220,6 +490,74 @@ def cp_basic_funnel_plot_umatan_2(race_df, raceuma_df, haraimodoshi_dict):
     fig15 = gp.basic_funnel_plot(fig15_data)
     return fig15
 
+
+
+def cp_parallel_categories_diagram_umatan_3(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["場名"] in ('浦和','園田','笠松','高知','水沢','盛岡','川崎','大井') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umatan_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 9000 and x["払戻"] <= 20000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["WIN_RATE"] >= 47 and x["ANA_RANK"] <= 7 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["WIN_RATE"] >= 47 and x["ANA_RANK"] <= 7 and x["確定着順"] == 1 else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 51 and x["JIKU_RANK"] <= 4 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 51 and x["JIKU_RANK"] <= 4 and x["確定着順"] == 2 else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df = group_df[["場名", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+
+    level0_dim = go.parcats.Dimension(values=group_df["場名"], categoryorder='category ascending', label="場名")
+    level1_dim = go.parcats.Dimension(values=group_df["馬１対象"], categoryorder='category ascending', label="馬１対象")
+    level2_dim = go.parcats.Dimension(values=group_df["馬１的中"], categoryorder='category ascending', label="馬１的中")
+    level3_dim = go.parcats.Dimension(values=group_df["馬２対象"], categoryorder='category ascending', label="馬２対象")
+    level4_dim = go.parcats.Dimension(values=group_df["馬２的中"], categoryorder='category ascending', label="馬２的中")
+    level5_dim = go.parcats.Dimension(values=group_df["的中フラグ"], categoryorder='category ascending', label="的中フラグ")
+    level6_dim = go.parcats.Dimension(values=group_df["払戻フラグ"], categoryorder='category ascending', label="払戻フラグ")
+
+    fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
+                                     hoverinfo='count',
+                                     arrangement='freeform')])
+    return fig
+
+
+def cp_stacked_funnel_plot_umatan_3(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["場名"] in ('浦和','園田','笠松','高知','水沢','盛岡','川崎','大井') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["umatan_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 9000 and x["払戻"] <= 20000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["WIN_RATE"] >= 47 and x["ANA_RANK"] <= 7 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 43 and x["馬券評価順位"] <= 8 and x["WIN_RATE"] >= 47 and x["ANA_RANK"] <= 7 and x["確定着順"] == 1 else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 51 and x["JIKU_RANK"] <= 4 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 51 and x["JIKU_RANK"] <= 4 and x["確定着順"] == 2 else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df.loc[:, "総レース数"] = True
+    group_df = group_df[["場名", "総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+    basho_list = group_df["場名"].drop_duplicates().tolist()
+
+    fig = go.Figure()
+    for basho in basho_list:
+        fig.add_trace(go.Funnel(
+            name=basho,
+            y=["総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"],
+            text=[basho, "得点 >= 43 and 馬券評価順位 <= 8 and WIN_RATE >= 47 and ANA_RANK <= 7", "確定着順 == 1",
+                  "得点 >= 51 and JIKU_RANK <= 4", "確定着順 == 2", "的中", "払戻 >= 9000 and 払戻 <= 20000"],
+            x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
+            textinfo="value+percent initial"
+        ))
+    return fig
+
 def cp_basic_funnel_plot_umatan_3(race_df, raceuma_df, haraimodoshi_dict):
     # 馬単的中3
     fig16_base = race_df.query("場名 in ('浦和','園田','笠松','高知','水沢','盛岡','川崎','大井')")["競走コード"].astype(str).apply(lambda x: x[:11])
@@ -241,6 +579,73 @@ def cp_basic_funnel_plot_umatan_3(race_df, raceuma_df, haraimodoshi_dict):
     fig16_data = dict(number=fig16_number, stage=fig16_stage)
     fig16 = gp.basic_funnel_plot(fig16_data)
     return fig16
+
+
+def cp_parallel_categories_diagram_wide_1(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["場名"] in ('笠松','佐賀','水沢','盛岡','川崎','大井','姫路','名古屋','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["wide_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 3000 and x["払戻"] <= 6000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 51 and x["デフォルト得点"] <= 55 and x["JIKU_RANK"] <= 6 and x["WIN_RANK"] <= 4 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 51 and x["デフォルト得点"] <= 55 and x["JIKU_RANK"] <= 6 and x["WIN_RANK"] <= 4 and x["確定着順"] in (1,2,3) else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 42 and x["JIKU_RANK"] <= 10 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 42 and x["JIKU_RANK"] <= 10 and x["確定着順"] in (1,2,3) else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df = group_df[["場名", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+
+    level0_dim = go.parcats.Dimension(values=group_df["場名"], categoryorder='category ascending', label="場名")
+    level1_dim = go.parcats.Dimension(values=group_df["馬１対象"], categoryorder='category ascending', label="馬１対象")
+    level2_dim = go.parcats.Dimension(values=group_df["馬１的中"], categoryorder='category ascending', label="馬１的中")
+    level3_dim = go.parcats.Dimension(values=group_df["馬２対象"], categoryorder='category ascending', label="馬２対象")
+    level4_dim = go.parcats.Dimension(values=group_df["馬２的中"], categoryorder='category ascending', label="馬２的中")
+    level5_dim = go.parcats.Dimension(values=group_df["的中フラグ"], categoryorder='category ascending', label="的中フラグ")
+    level6_dim = go.parcats.Dimension(values=group_df["払戻フラグ"], categoryorder='category ascending', label="払戻フラグ")
+
+    fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
+                                     hoverinfo='count',
+                                     arrangement='freeform')])
+    return fig
+
+def cp_stacked_funnel_plot_wide_1(race_df, raceuma_df, haraimodoshi_dict):
+    # 馬連的中1
+    race_df.loc[:, "対象レースフラグ"] = race_df.apply(lambda x: True if x["場名"] in ('笠松','佐賀','水沢','盛岡','川崎','大井','姫路','名古屋','門別') else False, axis=1)
+    haraimodoshi_df = haraimodoshi_dict["wide_df"]
+    haraimodoshi_df.loc[:, "払戻フラグ"] = haraimodoshi_df.apply(lambda x: True if x["払戻"] >= 3000 and x["払戻"] <= 6000 else False, axis=1)
+    raceuma_df.loc[:, "馬１対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 51 and x["デフォルト得点"] <= 55 and x["JIKU_RANK"] <= 6 and x["WIN_RANK"] <= 4 else False, axis=1)
+    raceuma_df.loc[:, "馬１的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 51 and x["デフォルト得点"] <= 55 and x["JIKU_RANK"] <= 6 and x["WIN_RANK"] <= 4 and x["確定着順"] in (1,2,3) else False, axis=1)
+    raceuma_df.loc[:, "馬２対象"] = raceuma_df.apply(lambda x: True if x["得点"] >= 42 and x["JIKU_RANK"] <= 10 else False, axis=1)
+    raceuma_df.loc[:, "馬２的中"] = raceuma_df.apply(lambda x: True if x["得点"] >= 42 and x["JIKU_RANK"] <= 10 and x["確定着順"] in (1,2,3) else False, axis=1)
+    race_df = pd.merge(race_df, haraimodoshi_df, on="競走コード")
+    base_df = pd.merge(race_df[["競走コード", "対象レースフラグ", "払戻フラグ"]], raceuma_df[["競走コード", "馬番", "馬１対象", "馬１的中", "馬２対象", "馬２的中"]], on="競走コード")
+    base_df = base_df.query("対象レースフラグ == True")
+    base_df.loc[:, "馬２対象"] = base_df.apply(lambda x: True if x["馬２対象"] and not x["馬１対象"] else False, axis=1)
+    base_df.loc[:, "馬２的中"] = base_df.apply(lambda x: True if x["馬２的中"] and not x["馬１的中"] else False, axis=1)
+    group_df = base_df.groupby("競走コード")[["対象レースフラグ", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "払戻フラグ"]].any().reset_index()
+    group_df.loc[:, "的中フラグ"] = group_df.apply(lambda x: True if x["馬１的中"] and x["馬２的中"] else False, axis=1)
+    group_df = pd.merge(group_df, race_df[["競走コード", "場名"]], on="競走コード")
+    group_df.loc[:, "総レース数"] = True
+    group_df = group_df[["場名", "総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"]]
+    basho_list = group_df["場名"].drop_duplicates().tolist()
+
+    fig = go.Figure()
+    for basho in basho_list:
+        fig.add_trace(go.Funnel(
+            name=basho,
+            y=["総レース数", "馬１対象", "馬１的中", "馬２対象", "馬２的中", "的中フラグ", "払戻フラグ"],
+            text=[basho, "得点 >= 51 and デフォルト得点 <= 55 and JIKU_RANK <= 6 and WIN_RANK <= 4", "確定着順 in (1,2,3)",
+                  "得点 >= 42 and JIKU_RANK <= 10", "確定着順 in (1,2,3)", "的中", "払戻 >= 3000 and 払戻 <= 6000"],
+            x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
+            textinfo="value+percent initial"
+        ))
+    return fig
+
 
 def cp_basic_funnel_plot_wide_1(race_df, raceuma_df, haraimodoshi_dict):
     # ワイド的中1
@@ -636,7 +1041,6 @@ def cp_simple_line_rap(race_sr, height):
         fig11 = gp.simple_line(fig11_df)
         fig11.update_layout(height=height, margin={'t': 0, 'b': 0, 'l': 0})
     else:
-        print("rap empty")
         fig11 = ""
     return fig11
 
@@ -716,7 +1120,6 @@ def dbc_graph_with_click(graph_id, width, fig, selected_data):
         )
 
 def dbc_race_info_table(table_id, width, df):
-    print(df.iloc[0])
     df['予想タイム指数'] = df['予想タイム指数'].map("{:,.2f}".format)
     df['先行指数'] = df['先行指数'].map("{:,.2f}".format)
     df['WIN_RATE'] = df['WIN_RATE'].map("{:,.2f}".format)
@@ -731,6 +1134,7 @@ def dbc_race_info_table(table_id, width, df):
         columns=[
             {'id': '枠番', 'name': '枠番', 'type': 'numeric'},
             {'id': '馬番', 'name': '馬番', 'type': 'numeric'},
+            {'id': '予想展開', 'name': '予想展開', 'type': 'numeric'},
             {'id': '馬名', 'name': '馬名', 'type': 'text'},
             {'id': '性別コード', 'name': '性別コード', 'type': 'text'},
             {'id': '馬齢', 'name': '馬齢', 'type': 'numeric'},
@@ -738,28 +1142,24 @@ def dbc_race_info_table(table_id, width, df):
             {'id': '騎手名', 'name': '騎手名', 'type': 'text'},
             {'id': '調教師名', 'name': '調教師名', 'type': 'text'},
             {'id': '所属', 'name': '所属', 'type': 'text'},
-            {'id': '得点', 'name': '得点', 'type': 'numeric'},
             {'id': '馬券評価順位', 'name': '馬券評価順位', 'type': 'numeric'},
+            {'id': '得点', 'name': '得点', 'type': 'numeric'},
+            {'id': 'SCORE_RANK', 'name': 'SCORE_RANK', 'type': 'numeric'},
+            {'id': 'SCORE', 'name': 'SCORE', 'type': 'numeric'},
+            {'id': 'WIN_RANK', 'name': 'WIN_RANK', 'type': 'numeric'},
+            {'id': 'WIN_RATE', 'name': 'WIN_RATE', 'type': 'numeric'},
+            {'id': 'JIKU_RANK', 'name': 'JIKU_RANK', 'type': 'numeric'},
+            {'id': 'JIKU_RATE', 'name': 'JIKU_RATE', 'type': 'numeric'},
+            {'id': 'ANA_RANK', 'name': 'ANA_RANK', 'type': 'numeric'},
+            {'id': 'ANA_RATE', 'name': 'ANA_RATE', 'type': 'numeric'},
             {'id': 'デフォルト得点', 'name': 'デフォルト得点', 'type': 'numeric'},
             {'id': '得点V3', 'name': '得点V3', 'type': 'numeric'},
-            {'id': 'SCORE', 'name': 'SCORE', 'type': 'numeric'},
-            {'id': 'SCORE_RANK', 'name': 'SCORE_RANK', 'type': 'numeric'},
-            {'id': 'WIN_RATE', 'name': 'WIN_RATE', 'type': 'numeric'},
-            {'id': 'WIN_RANK', 'name': 'WIN_RANK', 'type': 'numeric'},
-            {'id': 'JIKU_RATE', 'name': 'JIKU_RATE', 'type': 'numeric'},
-            {'id': 'JIKU_RANK', 'name': 'JIKU_RANK', 'type': 'numeric'},
-            {'id': 'ANA_RATE', 'name': 'ANA_RATE', 'type': 'numeric'},
-            {'id': 'ANA_RANK', 'name': 'ANA_RANK', 'type': 'numeric'},
             {'id': '予想タイム指数順位', 'name': '予想タイム指数順位', 'type': 'numeric'},
             {'id': '予想タイム指数', 'name': '予想タイム指数', 'type': 'numeric'},
             {'id': '先行指数', 'name': '先行指数', 'type': 'numeric'},
-            {'id': '予想展開', 'name': '予想展開', 'type': 'numeric'},
             {'id': 'CK1_RATE', 'name': 'CK1_RATE', 'type': 'numeric', 'format': FormatTemplate.percentage(1)},
             {'id': 'CK2_RATE', 'name': 'CK2_RATE', 'type': 'numeric', 'format': FormatTemplate.percentage(1)},
             {'id': 'CK3_RATE', 'name': 'CK3_RATE', 'type': 'numeric', 'format': FormatTemplate.percentage(1)},
-            {'id': 'CK1_RANK', 'name': 'CK1_RANK', 'type': 'numeric'},
-            {'id': 'CK2_RANK', 'name': 'CK2_RANK', 'type': 'numeric'},
-            {'id': 'CK3_RANK', 'name': 'SCORE_RANK', 'CK3_RANK': 'numeric'},
 
         ],
         data=df.to_dict("record"),
@@ -814,7 +1214,6 @@ def dbc_race_result_table(table_id, width, df):
     df['SCORE'] = df['SCORE'].map("{:,.2f}".format)
     df['単勝オッズ'] = df['単勝オッズ'].map("{:,.1f}".format)
     df['複勝オッズ1'] = df['複勝オッズ1'].map("{:,.1f}".format)
-    df['複勝オッズ2'] = df['複勝オッズ2'].map("{:,.1f}".format)
     df['CK1_RATE'] = df['CK1_RATE'] / 100
     df['CK2_RATE'] = df['CK2_RATE'] / 100
     df['CK3_RATE'] = df['CK3_RATE'] / 100
@@ -822,46 +1221,40 @@ def dbc_race_result_table(table_id, width, df):
         id = table_id,
         columns=[
             {'id': '枠番', 'name': '枠番', 'type': 'numeric'},
+            {'id': '確定着順', 'name': '確定着順', 'type': 'numeric'},
             {'id': '馬番', 'name': '馬番', 'type': 'numeric'},
-            {'id': '馬名', 'name': '馬名', 'type': 'text'},
+            {'id': '馬名表用', 'name': '馬名表用', 'type': 'text'},
             {'id': '性別コード', 'name': '性別コード', 'type': 'text'},
             {'id': '馬齢', 'name': '馬齢', 'type': 'numeric'},
             {'id': '負担重量', 'name': '負担重量', 'type': 'numeric'},
             {'id': '騎手名', 'name': '騎手名', 'type': 'text'},
-            {'id': '展開コード', 'name': '展開コード', 'type': 'text'},
-            {'id': '馬体重', 'name': '馬体重', 'type': 'numeric'},
-            {'id': '確定着順', 'name': '確定着順', 'type': 'numeric'},
+            {'id': '単勝オッズ', 'name': '単勝オッズ', 'type': 'numeric'},
+            {'id': '単勝人気', 'name': '単勝人気', 'type': 'numeric'},
+            {'id': '複勝オッズ1', 'name': '複勝オッズ1', 'type': 'numeric'},
             {'id': 'コーナー順位1', 'name': 'コーナー順位1', 'type': 'numeric'},
             {'id': 'コーナー順位2', 'name': 'コーナー順位2', 'type': 'numeric'},
             {'id': 'コーナー順位3', 'name': 'コーナー順位3', 'type': 'numeric'},
             {'id': 'コーナー順位4', 'name': 'コーナー順位4', 'type': 'numeric'},
             {'id': '上がりタイム', 'name': '上がりタイム', 'type': 'numeric'},
+            {'id': '展開コード', 'name': '展開コード', 'type': 'text'},
+            {'id': '馬体重', 'name': '馬体重', 'type': 'numeric'},
             {'id': '調教師名', 'name': '調教師名', 'type': 'text'},
             {'id': '所属', 'name': '所属', 'type': 'text'},
-            {'id': '得点', 'name': '得点', 'type': 'numeric'},
             {'id': '馬券評価順位', 'name': '馬券評価順位', 'type': 'numeric'},
+            {'id': '得点', 'name': '得点', 'type': 'numeric'},
+            {'id': 'SCORE_RANK', 'name': 'SCORE_RANK', 'type': 'numeric'},
+            {'id': 'SCORE', 'name': 'SCORE', 'type': 'numeric'},
+            {'id': 'WIN_RANK', 'name': 'WIN_RANK', 'type': 'numeric'},
+            {'id': 'WIN_RATE', 'name': 'WIN_RATE', 'type': 'numeric'},
+            {'id': 'JIKU_RANK', 'name': 'JIKU_RANK', 'type': 'numeric'},
+            {'id': 'JIKU_RATE', 'name': 'JIKU_RATE', 'type': 'numeric'},
+            {'id': 'ANA_RANK', 'name': 'ANA_RANK', 'type': 'numeric'},
+            {'id': 'ANA_RATE', 'name': 'ANA_RATE', 'type': 'numeric'},
             {'id': 'デフォルト得点', 'name': 'デフォルト得点', 'type': 'numeric'},
             {'id': '得点V3', 'name': '得点V3', 'type': 'numeric'},
-            {'id': 'SCORE', 'name': 'SCORE', 'type': 'numeric'},
-            {'id': 'SCORE_RANK', 'name': 'SCORE_RANK', 'type': 'numeric'},
-            {'id': 'WIN_RATE', 'name': 'WIN_RATE', 'type': 'numeric'},
-            {'id': 'WIN_RANK', 'name': 'WIN_RANK', 'type': 'numeric'},
-            {'id': 'JIKU_RATE', 'name': 'JIKU_RATE', 'type': 'numeric'},
-            {'id': 'JIKU_RANK', 'name': 'JIKU_RANK', 'type': 'numeric'},
-            {'id': 'ANA_RATE', 'name': 'ANA_RATE', 'type': 'numeric'},
-            {'id': 'ANA_RANK', 'name': 'ANA_RANK', 'type': 'numeric'},
-            {'id': 'タイム', 'name': 'タイム', 'type': 'numeric'},
-            {'id': 'タイム指数', 'name': 'タイム指数', 'type': 'numeric'},
-            {'id': '単勝オッズ', 'name': '単勝オッズ', 'type': 'numeric'},
-            {'id': '単勝人気', 'name': '単勝人気', 'type': 'numeric'},
-            {'id': '複勝オッズ1', 'name': '複勝オッズ1', 'type': 'numeric'},
-            {'id': '複勝オッズ2', 'name': '複勝オッズ2', 'type': 'numeric'},
             {'id': 'CK1_RATE', 'name': 'CK1_RATE', 'type': 'numeric', 'format': FormatTemplate.percentage(1)},
             {'id': 'CK2_RATE', 'name': 'CK2_RATE', 'type': 'numeric', 'format': FormatTemplate.percentage(1)},
             {'id': 'CK3_RATE', 'name': 'CK3_RATE', 'type': 'numeric', 'format': FormatTemplate.percentage(1)},
-            {'id': 'CK1_RANK', 'name': 'CK1_RANK', 'type': 'numeric'},
-            {'id': 'CK2_RANK', 'name': 'CK2_RANK', 'type': 'numeric'},
-            {'id': 'CK3_RANK', 'name': 'SCORE_RANK', 'CK3_RANK': 'numeric'},
 
         ],
         data=df.to_dict("record"),
@@ -892,6 +1285,21 @@ def dbc_race_result_table(table_id, width, df):
               'backgroundColor': '#FF4136', 'color': 'white'}] +
             [{'if': {'filter_query': '{{単勝人気}} = {}'.format(df['単勝人気'].min()),
                      'column_id': '単勝人気'},
+              'backgroundColor': '#FF4136', 'color': 'white'}] +
+            [{'if': {'filter_query': '{{CK1_RATE}} = {}'.format(df['CK1_RATE'].max()),
+                     'column_id': 'CK1_RATE'},
+              'backgroundColor': '#FF4136', 'color': 'white'}] +
+            [{'if': {'filter_query': '{{CK2_RATE}} = {}'.format(df['CK2_RATE'].max()),
+                     'column_id': 'CK2_RATE'},
+              'backgroundColor': '#FF4136', 'color': 'white'}] +
+            [{'if': {'filter_query': '{{CK3_RATE}} = {}'.format(df['CK3_RATE'].max()),
+                     'column_id': 'CK3_RATE'},
+              'backgroundColor': '#FF4136', 'color': 'white'}] +
+            [{'if': {'filter_query': '{{デフォルト得点}} = {}'.format(df['デフォルト得点'].max()),
+                     'column_id': 'デフォルト得点'},
+              'backgroundColor': '#FF4136', 'color': 'white'}] +
+            [{'if': {'filter_query': '{{得点V3}} = {}'.format(df['得点V3'].max()),
+                     'column_id': '得点V3'},
               'backgroundColor': '#FF4136', 'color': 'white'}]
         ),
         sort_action="native",
@@ -913,7 +1321,6 @@ def get_kyakushitsu_label(value):
 
 
 def dbc_race_info(race_sr):
-    print(race_sr)
     return \
         dbc.Col(
             html.H4([f"{race_sr['場名']} {race_sr['競走番号']}R {race_sr['距離']}m {race_sr['競走条件名称']} {race_sr['競走名略称']}",

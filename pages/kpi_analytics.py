@@ -72,28 +72,53 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig8.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 馬連的中1
-    fig10 = wp.cp_basic_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict)
+    fig10 = wp.cp_stacked_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict)
     fig10.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 馬連的中2
-    fig11 = wp.cp_basic_funnel_plot_umaren_2(race_df, raceuma_df, haraimodoshi_dict)
+    fig11 = wp.cp_stacked_funnel_plot_umaren_2(race_df, raceuma_df, haraimodoshi_dict)
     fig11.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 馬単的中1
-    fig12 = wp.cp_basic_funnel_plot_umatan_1(race_df, raceuma_df, haraimodoshi_dict)
+    fig12 = wp.cp_stacked_funnel_plot_umatan_1(race_df, raceuma_df, haraimodoshi_dict)
     fig12.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 馬単的中2
-    fig13 = wp.cp_basic_funnel_plot_umatan_2(race_df, raceuma_df, haraimodoshi_dict)
+    fig13 = wp.cp_stacked_funnel_plot_umatan_2(race_df, raceuma_df, haraimodoshi_dict)
     fig13.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 馬単的中3
-    fig14 = wp.cp_basic_funnel_plot_umatan_3(race_df, raceuma_df, haraimodoshi_dict)
+    fig14 = wp.cp_stacked_funnel_plot_umatan_3(race_df, raceuma_df, haraimodoshi_dict)
     fig14.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
     # ワイド的中1
-    fig15 = wp.cp_basic_funnel_plot_wide_1(race_df, raceuma_df, haraimodoshi_dict)
+    fig15 = wp.cp_stacked_funnel_plot_wide_1(race_df, raceuma_df, haraimodoshi_dict)
     fig15.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
+
+
+    # 馬連的中1
+    fig20 = wp.cp_parallel_categories_diagram_umaren_1(race_df, raceuma_df, haraimodoshi_dict)
+    fig20.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
+
+    # 馬連的中2
+    fig21 = wp.cp_parallel_categories_diagram_umaren_2(race_df, raceuma_df, haraimodoshi_dict)
+    fig21.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
+
+    # 馬単的中1
+    fig22 = wp.cp_parallel_categories_diagram_umatan_1(race_df, raceuma_df, haraimodoshi_dict)
+    fig22.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
+
+    # 馬単的中2
+    fig23 = wp.cp_parallel_categories_diagram_umatan_2(race_df, raceuma_df, haraimodoshi_dict)
+    fig23.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
+
+    # 馬単的中3
+    fig24 = wp.cp_parallel_categories_diagram_umatan_3(race_df, raceuma_df, haraimodoshi_dict)
+    fig24.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
+
+    # ワイド的中1
+    fig25 = wp.cp_parallel_categories_diagram_wide_1(race_df, raceuma_df, haraimodoshi_dict)
+    fig25.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
 
     return dcc.Loading(id="kpi-analytics-lender-loading", children=[dbc.Row([
@@ -121,18 +146,45 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
                 wp.dbc_graph("fig8", 6, fig8),
             ], className="h-50"),
             dbc.Row([
-                wp.dbc_title("馬連的中1", 2),
-                wp.dbc_title("馬連的中2", 2),
-                wp.dbc_title("馬単的中1", 2),
-                wp.dbc_title("馬単的中2", 2),
-                wp.dbc_title("馬単的中3", 2),
-                wp.dbc_title("ワイド的中1", 2),
+                wp.dbc_title("馬連的中1", 12),
             ], className="h-8"),
             dbc.Row([
-                wp.dbc_graph("fig10", 2, fig10),
-                wp.dbc_graph("fig11", 2, fig11),
-                wp.dbc_graph("fig12", 2, fig12),
-                wp.dbc_graph("fig13", 2, fig13),
-                wp.dbc_graph("fig14", 2, fig14),
-                wp.dbc_graph("fig15", 2, fig15),
-            ], className="h-50"),])
+                wp.dbc_graph("fig10", 5, fig10),
+                wp.dbc_graph("fig20", 7, fig20),
+            ], className="h-50"),
+            dbc.Row([
+                wp.dbc_title("馬連的中2", 12),
+            ], className="h-8"),
+            dbc.Row([
+                wp.dbc_graph("fig11", 5, fig11),
+                wp.dbc_graph("fig21", 7, fig21),
+            ], className="h-50"),
+            dbc.Row([
+                wp.dbc_title("馬単的中1", 12),
+            ], className="h-8"),
+            dbc.Row([
+                wp.dbc_graph("fig12", 5, fig12),
+                wp.dbc_graph("fig22", 7, fig22),
+            ], className="h-50"),
+            dbc.Row([
+                wp.dbc_title("馬単的中2", 12),
+            ], className="h-8"),
+            dbc.Row([
+                wp.dbc_graph("fig13", 5, fig13),
+                wp.dbc_graph("fig23", 7, fig23),
+            ], className="h-50"),
+            dbc.Row([
+                wp.dbc_title("馬単的中3", 12),
+            ], className="h-8"),
+            dbc.Row([
+                wp.dbc_graph("fig14", 5, fig14),
+                wp.dbc_graph("fig24", 7, fig24),
+            ], className="h-50"),
+            dbc.Row([
+                wp.dbc_title("ワイド的中1", 12),
+            ], className="h-8"),
+            dbc.Row([
+                wp.dbc_graph("fig15", 5, fig15),
+                wp.dbc_graph("fig25", 7, fig25),
+            ], className="h-50"),
+    ])

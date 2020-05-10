@@ -40,7 +40,6 @@ def predict_v4_model(target_date, race_id, target):
     exp_data = exp_data[exp_data["RACE_KEY"] == race_id]
     val = get_val_list(exp_data, cls_val)[0]
     # 対象の競馬場のデータを取得する
-    print("=============== cls_val:" + cls_val + " val:" + val + " ===========================")
     filter_df = get_filter_df(exp_data, cls_val, val, class_list)
     # 予測を実施
     if not filter_df.empty:
@@ -49,11 +48,8 @@ def predict_v4_model(target_date, race_id, target):
 
 
 def predict_race_lgm(self, this_model_name, temp_df):
-    print("======= this_model_name: " + this_model_name + " ==========")
     temp_df = temp_df.replace(np.inf,np.nan).fillna(temp_df.replace(np.inf,np.nan).mean()).reset_index()
     exp_df = temp_df.drop(self.index_list, axis=1).to_numpy()
-    print(exp_df)
-    print(self.model_folder)
     if os.path.exists(self.model_folder + this_model_name + '.pickle'):
         with open(self.model_folder + this_model_name + '.pickle', 'rb') as f:
             model = pickle.load(f)
@@ -83,7 +79,6 @@ def get_val_list(df, cls_val):
 
 def get_filter_df(df, cls_val, val, class_list):
     query_str = cls_val + " == " + val
-    print(query_str)
     filter_df = df.query(query_str)
     # 分類対象のデータを削除
     filter_df.drop(class_list, axis=1, inplace=True)

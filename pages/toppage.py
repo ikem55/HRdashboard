@@ -28,7 +28,6 @@ def toppage():
     )
 
 def toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
-    print("toppage_render")
 
     daily_bet_df = cd.get_daily_bet_df(bet_df)
     daily_rank1_raceuma_df = cd.get_daily_rank1_raceuma_df(raceuma_df)
@@ -124,7 +123,6 @@ def toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     fig21 = wp.cp_choosing_the_algorithm_sanrenpuku_dist(race_df, haraimodoshi_dict)
     fig21.update_layout(height=250, margin={'t': 0, 'b': 0, 'l': 0})
 
-    print("start rendering")
     return dcc.Loading(id="top-detail-loading", children=[
         dbc.Row([
                 wp.dbc_title("回収", 2),

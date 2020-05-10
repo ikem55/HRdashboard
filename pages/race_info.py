@@ -66,11 +66,11 @@ def race_info_render(race_df, raceuma_df, shap_df_umaren_are, shap_df_umatan_are
     race_sr = race_df.iloc[0]
     term_start_date = "2019-12-01"
     term_end_date = race_sr["月日"].strftime("%Y-%m-%d")
-    print(term_end_date)
     ketto_toroku_bango_list = raceuma_df["血統登録番号"].tolist()
     raceuma_prev_df = GetData.get_raceuma_prev_df(term_start_date, term_end_date, ketto_toroku_bango_list)
     raceuma_prev_df = pd.merge(raceuma_df[["血統登録番号", "馬名"]], raceuma_prev_df, on="血統登録番号")
     raceuma_df = raceuma_df.sort_values("馬番", ascending=False)
+    raceuma_prev_df = raceuma_prev_df.sort_values("馬番", ascending=False)
 
     # 得点
     fig1 = wp.cp_basic_horizontal_bar_chart_score(raceuma_df)
@@ -81,11 +81,11 @@ def race_info_render(race_df, raceuma_df, shap_df_umaren_are, shap_df_umatan_are
     fig2.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 得点バブル
-    fig3 = wp.cp_buble_chart_score(raceuma_df)
+    fig3 = wp.cp_buble_chart_score(raceuma_df.sort_values("馬番"))
     fig3.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
     # レーダーチャート
-    fig4 = wp.cp_multiple_trace_rader_chart_score(raceuma_df)
+    fig4 = wp.cp_multiple_trace_rader_chart_score(raceuma_df.sort_values("馬番"))
     fig4.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 先行率
@@ -98,7 +98,7 @@ def race_info_render(race_df, raceuma_df, shap_df_umaren_are, shap_df_umatan_are
 
     # テーブルデータ
     fig7_df = raceuma_df[["枠番", "馬番", "馬名", "性別コード", "馬齢", "負担重量", "予想タイム指数順位", "予想タイム指数", "デフォルト得点", "得点", "馬券評価順位", "先行指数", "予想展開", "騎手名", "調教師名",
-                          "所属", "得点V3", "WIN_RATE", "JIKU_RATE", "ANA_RATE", "WIN_RANK", "JIKU_RANK", "ANA_RANK", "SCORE", "SCORE_RANK", "CK1_RATE", "CK2_RATE", "CK3_RATE", "CK1_RANK", "CK2_RANK", "CK3_RANK"]]
+                          "所属", "得点V3", "WIN_RATE", "JIKU_RATE", "ANA_RATE", "WIN_RANK", "JIKU_RANK", "ANA_RANK", "SCORE", "SCORE_RANK", "CK1_RATE", "CK2_RATE", "CK3_RATE", "CK1_RANK", "CK2_RANK", "CK3_RANK"]].sort_values("馬番")
 
     # 馬連荒れ根拠
     fig8 = wp.cp_controlling_text_fontsize_with_uniformtext_umaren_basis(shap_df_umaren_are)

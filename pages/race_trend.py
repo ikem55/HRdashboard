@@ -9,7 +9,6 @@ import pandas as pd
 
 
 def race_trend():
-    print("race_trend")
     race_df = GetData.get_race_data_real().query("データ区分 == '7'")
     raceuma_df = GetData.get_raceuma_data_real().query("データ区分 == '7'")
 
@@ -69,7 +68,6 @@ def race_trend():
         fig9 = wp.cp_simple_waterfall_chart_balance_change(summary_bet_df)
         fig9.update_layout(height=300, margin={'t': 0, 'b': 0, 'l': 0})
     else:
-        print("empty bet_df")
         fig8 = ""
         fig9 = ""
 

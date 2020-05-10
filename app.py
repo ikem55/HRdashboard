@@ -84,9 +84,7 @@ app.layout = dcc.Loading(id="toppage-loading", children=[html.Div([dcc.Location(
      Input('toppage-date-picker-range', 'end_date')]
 )
 def toppage_render_top_dashboard(start_date, end_date):
-    print(f"---------toppage_render_top_dashboard callback: {start_date} {end_date}")
     if start_date != None and end_date != None:
-        print("render_toppage: get_data")
         race_df = GetData.get_race_data(start_date, end_date).query("データ区分 == '7'")
         raceuma_df = GetData.get_raceuma_data(start_date, end_date).query("データ区分 == '7'")
         bet_df = GetData.get_bet_data(start_date, end_date)
@@ -105,9 +103,7 @@ def toppage_render_top_dashboard(start_date, end_date):
      Input('return-analytics-date-picker-range', 'end_date')]
 )
 def return_analytics_render_return_analytics(start_date, end_date):
-    print(f"---------return_analytics_render_children callback: {start_date} {end_date}")
     if start_date != None and end_date != None:
-        print("render_return_analytics: get_data")
         raceuma_df = GetData.get_raceuma_data(start_date, end_date)
         bet_df = GetData.get_bet_data(start_date, end_date)
         haraimodoshi_dict = GetData.get_haraimodoshi_dict(start_date, end_date)
@@ -125,9 +121,7 @@ def return_analytics_render_return_analytics(start_date, end_date):
      Input('kpi-analytics-date-picker-range', 'end_date')]
 )
 def kpi_analytics_render_return_analytics(start_date, end_date):
-    print(f"---------kpi_analytics_render_return_analytics callback: {start_date} {end_date}")
     if start_date != None and end_date != None:
-        print("render_return_analytics: get_data")
         race_df = GetData.get_race_data(start_date, end_date).query("データ区分 == '7'")
         raceuma_df = GetData.get_raceuma_data(start_date, end_date).query("データ区分 == '7'")
         bet_df = GetData.get_bet_data(start_date, end_date)
@@ -146,7 +140,6 @@ def kpi_analytics_render_return_analytics(start_date, end_date):
     [Input('raceinfo-date-picker-single', 'date')]
 )
 def raceinfo_set_keibajo_list_option(date):
-    print(f"---------raceinfo_set_keibajo_list_option callback: {date}")
     race_df = GetData.get_race_data(date, date)
     ba_list_df = race_df[race_df["月日"] == date][["場名"]].rename(columns={"場名": "label"})
     ba_list_df.loc[:, "value"] = ba_list_df["label"]
@@ -159,7 +152,6 @@ def raceinfo_set_keibajo_list_option(date):
     [Input('raceinfo-dropdown-keibajo', 'options')]
 )
 def raceinfo_set_keibajo_list_value(set_ba_list_option):
-    print("---------raceinfo_set_keibajo_list_value callback)")
     return set_ba_list_option
 
 # 場所を指定、指定した場所のレースIDをリストを表示させる
@@ -170,7 +162,6 @@ def raceinfo_set_keibajo_list_value(set_ba_list_option):
 )
 def raceinfo_set_raceid_list_option(ba_name, date):
     if type(ba_name) == str:
-        print(f"---------raceinfo_set_raceid_list_option callback: {ba_name} {date}")
         race_df = GetData.get_race_data(date, date)
         race_list_df = race_df[race_df["場名"] == ba_name][["競走コード", "競走番号"]].rename(columns={"競走番号": "label", "競走コード": "value"})
         race_list = race_list_df.drop_duplicates().to_dict(orient='record')
@@ -184,7 +175,6 @@ def raceinfo_set_raceid_list_option(ba_name, date):
     [Input('raceinfo-dropdown-raceid', 'options')]
 )
 def raceinfo_set_raceid_list_value(set_raceid_list_option):
-    print("---------raceinfo_set_raceid_list_value callback)")
     return set_raceid_list_option
 
 
@@ -195,7 +185,6 @@ def raceinfo_set_raceid_list_value(set_raceid_list_option):
      Input('raceinfo-date-picker-single', 'date')]
 )
 def raceinfo_render_race_detail(race_id, date):
-    print(f"---------raceinfo_render_race_detail callback: {race_id} {date}")
     if type(race_id) == int:
         race_df = GetData.get_race_data(date, date)
         raceuma_df = GetData.get_raceuma_data(date, date)
@@ -219,7 +208,6 @@ def raceinfo_render_race_detail(race_id, date):
      Input('raceinfo-date-picker-single', 'date')]
 )
 def raceinfo_render_raceuma_detail(race_id, umaban, date):
-    print(f"---------raceinfo_render_raceuma_detail callback: {race_id} {umaban} {date}")
     if type(umaban) == int:
         raceuma_df = GetData.get_raceuma_data(date, date)
         this_raceuma_df = raceuma_df[raceuma_df["競走コード"] == race_id]
@@ -236,7 +224,6 @@ def raceinfo_render_raceuma_detail(race_id, umaban, date):
     [Input('raceresult-date-picker-single', 'date')]
 )
 def raceresult_set_race_list_option(date):
-    print(f"---------raceresult_set_race_list_option callback: {date}")
     race_df = GetData.get_race_data(date, date)
     bet_df = GetData.get_bet_data(date, date).groupby("競走コード").sum().reset_index()
     if len(bet_df.index) != 0:
@@ -256,7 +243,6 @@ def raceresult_set_race_list_option(date):
     [Input('raceresult-dropdown-raceid', 'options')]
 )
 def raceresult_set_race_list_value(raceresult_set_race_list_option):
-    print("---------raceresult_set_race_list_value callback)")
     return raceresult_set_race_list_option
 
 # レースIDを指定、指定したIDの情報を詳細ページに表示させる
@@ -266,7 +252,6 @@ def raceresult_set_race_list_value(raceresult_set_race_list_option):
      Input('raceresult-date-picker-single', 'date')]
 )
 def raceresult_render_race_detail(race_id, date):
-    print(f"---------raceinfo_render_race_detail callback: {race_id} {date}")
     if type(race_id) == int:
         race_df = GetData.get_race_data(date, date)
         raceuma_df = GetData.get_raceuma_data(date, date)
@@ -320,5 +305,4 @@ def render_page_content(pathname):
     )
 
 if __name__ == "__main__":
-    print('on hello')
     app.run_server(host="127.0.0.1", port=8000)
