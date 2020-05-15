@@ -12,9 +12,10 @@ def data_cards(value, reference):
         mode="number+delta",
         value=value,
         delta={'position': "top", 'reference': reference},
+        # title={"text": "Users online"},
         domain={'x': [0, 1], 'y': [0, 1]}))
 
-    fig.update_layout(paper_bgcolor="lightgray")
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5), )
     return fig
 
 def showing_information_above(value, reference, list_sr):
@@ -22,13 +23,13 @@ def showing_information_above(value, reference, list_sr):
         mode="number+delta",
         value=value,
         delta={"reference": reference, "valueformat": ".0f"},
-        title={"text": "Users online"},
         domain={'y': [0, 1], 'x': [0.25, 0.75]}))
 
     fig.add_trace(go.Scatter(
         y=list_sr))
 
     fig.update_layout(xaxis={'range': [0, len(list_sr)]})
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5), )
     return fig
 
 def add_steps_threshold_anda_delta(value, reference):
@@ -42,6 +43,7 @@ def add_steps_threshold_anda_delta(value, reference):
                    {'range': [0, 85], 'color': "lightgray"},
                    {'range': [85, 100], 'color': "gray"}],
                'threshold': {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': 110}}))
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def time_series_with_range_selector_buttions(df, x_label, y_label):
@@ -58,6 +60,7 @@ def time_series_with_range_selector_buttions(df, x_label, y_label):
             ])
         )
     )
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0),)
     return fig
 
 def simple_waterfall_chart(x_list, y_list):
@@ -73,6 +76,7 @@ def simple_waterfall_chart(x_list, y_list):
     fig.update_layout(
         showlegend=False
     )
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def buble_chart(x_list, y_list, z_list, name_list, x_title, y_title):
@@ -100,6 +104,7 @@ def buble_chart(x_list, y_list, z_list, name_list, x_title, y_title):
             gridwidth=2,
         ),
     )
+    fig.update_layout(margin=dict(l=5, r=5, t=20, b=50),)
     return fig
 
 def multi_bullet(type_list, value_list):
@@ -123,8 +128,7 @@ def multi_bullet(type_list, value_list):
                     {'range': [0, 80], 'color': "gray"},
                     {'range': [80, 100], 'color': "lightgray"}],
                 'bar': {'color': "black"}}))
-    fig.update_layout(#height=400,
-                      margin={'t': 0, 'b': 0, 'l': 0})
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def label_lines_with_annotations(multi_df):
@@ -207,6 +211,7 @@ def label_lines_with_annotations(multi_df):
 
     fig.update_layout(annotations=annotations)
     fig.update_layout(legend_orientation="h")
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 
@@ -217,6 +222,7 @@ def visualizing_the_distribution(df):
                        opacity=0.4)#, hover_data=df.columns)
     fig.update_layout(barmode='overlay')
     fig.update_layout(legend_orientation="h")
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 
@@ -293,12 +299,14 @@ def bar_chart_with_line_plot(x, y_value1, y_value2, y_title1, y_title2):
                                 showarrow=False))
     fig.update_layout(annotations=annotations)
     fig.update_layout(legend_orientation="h")
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 
 def pie_chart(labels, values):
     fig = go.Figure(data=[go.Pie(labels=labels, values=values, direction='clockwise',
                               hole=.4, sort=False)])
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def choosing_the_algorithm(df, x, y, color, max_y):
@@ -306,6 +314,7 @@ def choosing_the_algorithm(df, x, y, color, max_y):
     fig.update_traces(quartilemethod="exclusive")  # or "inclusive", or "linear" by default
     fig.update_layout(yaxis=dict(range=[0, max_y]))
     fig.update_layout(showlegend=False)
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 
@@ -341,6 +350,7 @@ def styled_categorical_dot_plot(y, x1, x2, name1, name2):
         hovermode='closest',
     )
     fig.update_layout(legend_orientation="h")
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def basic_horizontal_bar_chart(df):
@@ -349,7 +359,7 @@ def basic_horizontal_bar_chart(df):
     fig = px.bar(df, x="value", y="name", color="label", orientation='h',
                  height=400)
     fig.update_layout(legend_orientation="h")
-
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def basic_dot_plot(x, y_value1, y_value2, y_title1, y_title2):
@@ -399,7 +409,7 @@ def basic_dot_plot(x, y_value1, y_value2, y_title1, y_title2):
         margin=dict(l=100, r=20, t=70, b=70),
     )
     fig.update_layout(legend_orientation="h")
-
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def multiple_trace_rader_chart(categories, names, values):
@@ -420,6 +430,7 @@ def multiple_trace_rader_chart(categories, names, values):
             )),
         showlegend=True
     )
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def basic_horizontal_box_plot(names, values):
@@ -429,8 +440,10 @@ def basic_horizontal_box_plot(names, values):
         # Use x instead of y argument for horizontal plot
         fig.add_trace(go.Box(x=values[i], name=names[i]))
     fig.update_layout(showlegend=False)
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
+"""
 def add_steps_and_threshold(value):
     fig = go.Figure(go.Indicator(
         mode="number+gauge", value=value,
@@ -446,13 +459,15 @@ def add_steps_and_threshold(value):
                 {'range': [0, 50], 'color': "lightgray"},
                 {'range': [50, 70], 'color': "gray"}]}))
     fig.update_layout(height=250)
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
-
+"""
 
 def simple_line(df):
     # x=label, y=value
     fig = px.line(df, x="label", y="value")
     fig.update_layout(yaxis=dict(range=[int(min(df["value"].tolist())) * 0.95, int(max(df["value"].tolist())) * 1.05]))
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 
@@ -461,10 +476,15 @@ def controlling_text_fontsize_with_uniformtext(df):
     fig = px.bar(df, y='value', x='name', text='value')
     fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', yaxis=dict(range=[-0.6, 0.6]))
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def basic_funnel_plot(data):
-    fig = px.funnel(data, x='number', y='stage')
+    fig = go.Figure(go.Funnel(
+        x=data['number'],
+        y=data['stage']
+    ))
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig
 
 def multiple_line_and_bar_chart(x_name , line_y_list, line_y_name, bar_y_list, bar_y_name):
@@ -491,4 +511,5 @@ def multiple_line_and_bar_chart(x_name , line_y_list, line_y_name, bar_y_list, b
         yaxis=dict(side='left', showgrid=False, range=[0, max(list(itertools.chain.from_iterable(line_y_list))) * 1.1]),
         yaxis2=dict(side='right', overlaying='y', range=[0, max(list(itertools.chain.from_iterable(bar_y_list))) * 1.1], showgrid=False))
     fig.update_layout(legend_orientation="h")
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), )
     return fig

@@ -163,6 +163,7 @@ def cp_parallel_categories_diagram_umaren_1(race_df, raceuma_df, haraimodoshi_di
     fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
                                      hoverinfo='count',
                                      arrangement='freeform')])
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 
@@ -196,6 +197,7 @@ def cp_stacked_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict):
             x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
             textinfo="value+percent initial"
         ))
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 
@@ -253,6 +255,7 @@ def cp_parallel_categories_diagram_umaren_2(race_df, raceuma_df, haraimodoshi_di
     fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
                                      hoverinfo='count',
                                      arrangement='freeform')])
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 
@@ -287,6 +290,7 @@ def cp_stacked_funnel_plot_umaren_2(race_df, raceuma_df, haraimodoshi_dict):
             x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
             textinfo="value+percent initial"
         ))
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 
@@ -343,6 +347,7 @@ def cp_parallel_categories_diagram_umatan_1(race_df, raceuma_df, haraimodoshi_di
     fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
                                      hoverinfo='count',
                                      arrangement='freeform')])
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 
@@ -377,6 +382,7 @@ def cp_stacked_funnel_plot_umatan_1(race_df, raceuma_df, haraimodoshi_dict):
             x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
             textinfo="value+percent initial"
         ))
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 def cp_basic_funnel_plot_umatan_1(race_df, raceuma_df, haraimodoshi_dict):
@@ -432,6 +438,7 @@ def cp_parallel_categories_diagram_umatan_2(race_df, raceuma_df, haraimodoshi_di
     fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
                                      hoverinfo='count',
                                      arrangement='freeform')])
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 
@@ -466,6 +473,7 @@ def cp_stacked_funnel_plot_umatan_2(race_df, raceuma_df, haraimodoshi_dict):
             x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
             textinfo="value+percent initial"
         ))
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 def cp_basic_funnel_plot_umatan_2(race_df, raceuma_df, haraimodoshi_dict):
@@ -522,6 +530,7 @@ def cp_parallel_categories_diagram_umatan_3(race_df, raceuma_df, haraimodoshi_di
     fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
                                      hoverinfo='count',
                                      arrangement='freeform')])
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 
@@ -556,6 +565,7 @@ def cp_stacked_funnel_plot_umatan_3(race_df, raceuma_df, haraimodoshi_dict):
             x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
             textinfo="value+percent initial"
         ))
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 def cp_basic_funnel_plot_umatan_3(race_df, raceuma_df, haraimodoshi_dict):
@@ -611,6 +621,7 @@ def cp_parallel_categories_diagram_wide_1(race_df, raceuma_df, haraimodoshi_dict
     fig = go.Figure(data=[go.Parcats(dimensions=[level0_dim, level1_dim, level2_dim, level3_dim, level4_dim, level5_dim, level6_dim],
                                      hoverinfo='count',
                                      arrangement='freeform')])
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 def cp_stacked_funnel_plot_wide_1(race_df, raceuma_df, haraimodoshi_dict):
@@ -644,6 +655,7 @@ def cp_stacked_funnel_plot_wide_1(race_df, raceuma_df, haraimodoshi_dict):
             x=group_df.query(f"場名=='{basho}'").drop("場名", axis=1).sum().tolist(),
             textinfo="value+percent initial"
         ))
+    fig.update_layout(margin=dict(l=5, r=5, t=30, b=5))
     return fig
 
 
@@ -1087,18 +1099,20 @@ def dbc_title(title, width):
             },
         )
 
-def dbc_graph(graph_id, width, fig):
+def dbc_graph(graph_id, width, fig, title, height, bottom=15):
     if fig != "":
+        fig.update_layout(height=height, margin={'t': 30, 'b': bottom, 'l': 55}, title=title)
         return \
         dbc.Col(
             dcc.Graph(
                 id=graph_id,
-                figure=fig
+                figure=fig,
+                config={'displayModeBar': False}
             ),
             width=width,
             style={
                 "height": "100%",
-                "border-width": "10px"
+                "border-width": "40px"
             },
         )
     else:
@@ -1110,7 +1124,8 @@ def dbc_graph_with_click(graph_id, width, fig, selected_data):
             dcc.Graph(
                 id=graph_id,
                 selectedData=selected_data,
-                figure=fig
+                figure=fig,
+                config={'displayModeBar': False}
             ),
             width=width,
             style={
@@ -1196,15 +1211,33 @@ def dbc_race_info_table(table_id, width, df):
 def dbc_haraimodoshi_table(table_id, width, df):
     list_group = []
     for idx, item in df.iterrows():
-        list_group.append(dbc.ListGroupItem(f"{item['式別']}: {item['馬番']} - {item['払戻']}円", color="info"))
-    return dbc.ListGroup(list_group)
+        list_group.append(html.H6([f"{item['式別']}: {item['馬番']}", dbc.Badge(f"{item['払戻']}円", color=get_return_odds_label(item['払戻']), className="ml-1")]))
+    return html.Div(list_group)
 
 
 def dbc_bet_table(table_id, width, df):
     list_group = []
     for idx, item in df.iterrows():
-        list_group.append(dbc.ListGroupItem(f"{item['式別名']}: {item['番号']} - {item['金額']}円　{item['結果']}円", color="info"))
-    return dbc.ListGroup(list_group)
+        list_group.append(html.H6([f"{item['式別名']}: {item['番号']} - {item['金額']}円", dbc.Badge(f"{item['結果']}円", color=get_return_odds_label(item['結果']), className="ml-1")]))
+    return html.Div(list_group)
+
+def get_return_odds_label(number):
+    if number == 0:
+        return "dark"
+    elif number <= 500:
+        return "light"
+    elif number <= 1000:
+        return "info"
+    elif number <= 2000:
+        return "success"
+    elif number <= 5000:
+        return "warning"
+    elif number <= 10000:
+        return "primary"
+    elif number >= 10000:
+        return "danger"
+    else:
+        return "secondary"
 
 def dbc_race_result_table(table_id, width, df):
     df['タイム指数'] = df['タイム指数'].map("{:,.2f}".format)
@@ -1307,6 +1340,7 @@ def dbc_race_result_table(table_id, width, df):
         fixed_rows={"headers": True}
     )
     return table
+
 def get_kyakushitsu_label(value):
     if value == "逃げ":
         return dbc.Badge("逃げ", color="danger", className="mr-1")
@@ -1320,14 +1354,15 @@ def get_kyakushitsu_label(value):
         return ""
 
 
-def dbc_race_info(race_sr):
+def dbc_race_info(race_sr, width):
     return \
-        dbc.Col(
-            html.H4([f"{race_sr['場名']} {race_sr['競走番号']}R {race_sr['距離']}m {race_sr['競走条件名称']} {race_sr['競走名略称']}",
-            dbc.Badge(f" 馬連荒れ指数：{race_sr['UMAREN_ARE_RATE']}", color=get_label_color(race_sr['UMAREN_ARE_RATE']), className="mr-1"),
-            dbc.Badge(f"馬単荒れ指数：{race_sr['UMATAN_ARE_RATE']}", color=get_label_color(race_sr['UMATAN_ARE_RATE']), className="mr-1"),
-            dbc.Badge(f"三連複荒れ指数：{race_sr['SANRENPUKU_ARE_RATE']}", color=get_label_color(race_sr['SANRENPUKU_ARE_RATE']), className="mr-1"),
-            ]),
+        dbc.Col([
+            html.H5([f"{race_sr['場名']} {race_sr['競走番号']}R {race_sr['距離']}m {race_sr['競走条件名称']} {race_sr['競走名略称']}",
+            "馬連荒れ：", dbc.Badge(race_sr['UMAREN_ARE_RATE'], color=get_label_color(race_sr['UMAREN_ARE_RATE']), className="mr-1"),
+            "馬単荒れ：", dbc.Badge(race_sr['UMATAN_ARE_RATE'], color=get_label_color(race_sr['UMATAN_ARE_RATE']), className="mr-1"),
+            "三連複荒れ：", dbc.Badge(race_sr['SANRENPUKU_ARE_RATE'], color=get_label_color(race_sr['SANRENPUKU_ARE_RATE']), className="mr-1"),
+                     ])],
+            width=width,
             style={
                 "height": "100%",
                 "textAlign": "left",
@@ -1351,34 +1386,35 @@ def get_label_color(value):
     else:
         return "light"
 
-def dbc_race_result(race_sr, haraimodoshi_df):
+def dbc_race_result(race_sr, haraimodoshi_df, width):
     haraimodoshi_list = [f"{race_sr['天候コード']} {race_sr['馬場状態コード']} {race_sr['ペース']}"]
     for idx, item in haraimodoshi_df.iterrows():
         if item["式別"] == "tansho_df":
-            if item["払戻"] >= 3000:   haraimodoshi_list.append(dbc.Badge("単勝30倍以上", color="danger", className="mr-1"))
-            elif item["払戻"] >= 1000: haraimodoshi_list.append(dbc.Badge("単勝10倍以上", color="warning", className="mr-1"))
-            elif item["払戻"] <= 200:  haraimodoshi_list.append(dbc.Badge("単勝2倍以下", color="dark", className="mr-1"))
+            if item["払戻"] >= 5000:   haraimodoshi_list.append(dbc.Badge("単勝50倍", color="danger", className="mr-1"))
+            elif item["払戻"] >= 3000: haraimodoshi_list.append(dbc.Badge("単勝30倍", color="warning", className="mr-1"))
+            elif item["払戻"] <= 200:  haraimodoshi_list.append(dbc.Badge("単勝2倍", color="dark", className="mr-1"))
         elif item["式別"] == "fukusho_df":
-            if item["払戻"] >= 500:   haraimodoshi_list.append(dbc.Badge("複勝5倍以上", color="danger", className="mr-1"))
+            if item["払戻"] >= 1000:   haraimodoshi_list.append(dbc.Badge("複勝10倍", color="danger", className="mr-1"))
         elif item["式別"] == "umaren_df":
-            if item["払戻"] >= 5000:   haraimodoshi_list.append(dbc.Badge("馬連50倍以上", color="danger", className="mr-1"))
-            elif item["払戻"] >= 3000: haraimodoshi_list.append(dbc.Badge("馬連30倍以上", color="warning", className="mr-1"))
-            elif item["払戻"] <= 500:  haraimodoshi_list.append(dbc.Badge("馬連5倍以下", color="dark", className="mr-1"))
+            if item["払戻"] >= 8000:   haraimodoshi_list.append(dbc.Badge("馬連80倍", color="danger", className="mr-1"))
+            elif item["払戻"] >= 5000: haraimodoshi_list.append(dbc.Badge("馬連50倍", color="warning", className="mr-1"))
+            elif item["払戻"] <= 500:  haraimodoshi_list.append(dbc.Badge("馬連5倍", color="dark", className="mr-1"))
         elif item["式別"] == "umatan_df":
-            if item["払戻"] >= 10000:   haraimodoshi_list.append(dbc.Badge("馬単100倍以上", color="danger", className="mr-1"))
-            elif item["払戻"] >= 5000: haraimodoshi_list.append(dbc.Badge("馬単50倍以上", color="warning", className="mr-1"))
-            elif item["払戻"] <= 500:  haraimodoshi_list.append(dbc.Badge("馬単5倍以上", color="dark", className="mr-1"))
+            if item["払戻"] >= 12000:   haraimodoshi_list.append(dbc.Badge("馬単120倍", color="danger", className="mr-1"))
+            elif item["払戻"] >= 8000: haraimodoshi_list.append(dbc.Badge("馬単80倍", color="warning", className="mr-1"))
+            elif item["払戻"] <= 500:  haraimodoshi_list.append(dbc.Badge("馬単5倍", color="dark", className="mr-1"))
         elif item["式別"] == "wide_df":
-            if item["払戻"] >= 2000:   haraimodoshi_list.append(dbc.Badge("ワイド20倍以上", color="danger", className="mr-1"))
-            elif item["払戻"] >= 1000: haraimodoshi_list.append(dbc.Badge("ワイド10倍以上", color="warning", className="mr-1"))
-            elif item["払戻"] <= 200:  haraimodoshi_list.append(dbc.Badge("ワイド2倍以上", color="dark", className="mr-1"))
+            if item["払戻"] >= 4000:   haraimodoshi_list.append(dbc.Badge("ワイド40倍", color="danger", className="mr-1"))
+            elif item["払戻"] >= 2000: haraimodoshi_list.append(dbc.Badge("ワイド20倍", color="warning", className="mr-1"))
+            elif item["払戻"] <= 200:  haraimodoshi_list.append(dbc.Badge("ワイド2倍", color="dark", className="mr-1"))
         elif item["式別"] == "sanrenpuku_df":
-            if item["払戻"] >= 10000:   haraimodoshi_list.append(dbc.Badge("三連複100倍以上", color="danger", className="mr-1"))
-            elif item["払戻"] >= 5000: haraimodoshi_list.append(dbc.Badge("三連複50倍以上", color="warning", className="mr-1"))
-            elif item["払戻"] <= 500:  haraimodoshi_list.append(dbc.Badge("三連複5倍以上", color="dark", className="mr-1"))
+            if item["払戻"] >= 12000:   haraimodoshi_list.append(dbc.Badge("三連複120倍", color="danger", className="mr-1"))
+            elif item["払戻"] >= 8000: haraimodoshi_list.append(dbc.Badge("三連複80倍", color="warning", className="mr-1"))
+            elif item["払戻"] <= 500:  haraimodoshi_list.append(dbc.Badge("三連複5倍", color="dark", className="mr-1"))
     return \
         dbc.Col(
-            html.H4(haraimodoshi_list),
+            html.H5(haraimodoshi_list),
+            width=width,
             style={
                 "height": "100%",
                 "textAlign": "left",

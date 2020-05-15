@@ -33,158 +33,95 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
 
     # 得点１位着順
     fig1 = wp.cp_pie_chart_score_1(raceuma_df)
-    fig1.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 単勝回収率
     fig2_df = raceuma_df[raceuma_df["馬券評価順位"] == 1].copy()
     fig2_df_diff = fig2_df[fig2_df["年月日"] != end_date]
     fig2 = wp.cp_add_steps_threshold_anda_delta_tansho_return(fig2_df, fig2_df_diff)
-    fig2.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 複勝回収率
     fig3_df = raceuma_df[raceuma_df["馬券評価順位"] == 1].copy()
     fig3_df_diff = fig3_df[fig3_df["年月日"] != end_date]
     fig3 = wp.cp_add_steps_threshold_anda_delta_fukusho_return(fig3_df, fig3_df_diff)
-    fig3.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
     # １番人気
     fig4 = wp.cp_pie_chart_ninki_1(raceuma_df)
-    fig4.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 単勝回収率
     fig5_df = raceuma_df[raceuma_df["単勝人気"] == 1].copy()
     fig5_df_diff = fig5_df[fig5_df["年月日"] != end_date]
     fig5 = wp.cp_add_steps_threshold_anda_delta_tansho_return(fig5_df, fig5_df_diff)
-    fig5.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 複勝回収率
     fig6_df = raceuma_df[raceuma_df["単勝人気"] == 1].copy()
     fig6_df_diff = fig6_df[fig6_df["年月日"] != end_date]
     fig6 = wp.cp_add_steps_threshold_anda_delta_fukusho_return(fig6_df, fig6_df_diff)
-    fig6.update_layout(height=100, margin={'t': 0, 'b': 0, 'l': 0})
 
     # 場所別単複回収率・的中率
     fig7 = wp.cp_multiple_line_and_bar_chart_place_tanpuku_return(race_df, raceuma_df)
-    fig7.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 場所別馬券回収率・的中率
     fig8 = wp.cp_multiple_line_and_bar_chart_place_bet_return(bet_df)
-    fig8.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬連的中1
     fig10 = wp.cp_stacked_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict)
-    fig10.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬連的中2
     fig11 = wp.cp_stacked_funnel_plot_umaren_2(race_df, raceuma_df, haraimodoshi_dict)
-    fig11.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬単的中1
     fig12 = wp.cp_stacked_funnel_plot_umatan_1(race_df, raceuma_df, haraimodoshi_dict)
-    fig12.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬単的中2
     fig13 = wp.cp_stacked_funnel_plot_umatan_2(race_df, raceuma_df, haraimodoshi_dict)
-    fig13.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬単的中3
     fig14 = wp.cp_stacked_funnel_plot_umatan_3(race_df, raceuma_df, haraimodoshi_dict)
-    fig14.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # ワイド的中1
     fig15 = wp.cp_stacked_funnel_plot_wide_1(race_df, raceuma_df, haraimodoshi_dict)
-    fig15.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
 
     # 馬連的中1
     fig20 = wp.cp_parallel_categories_diagram_umaren_1(race_df, raceuma_df, haraimodoshi_dict)
-    fig20.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬連的中2
     fig21 = wp.cp_parallel_categories_diagram_umaren_2(race_df, raceuma_df, haraimodoshi_dict)
-    fig21.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬単的中1
     fig22 = wp.cp_parallel_categories_diagram_umatan_1(race_df, raceuma_df, haraimodoshi_dict)
-    fig22.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬単的中2
     fig23 = wp.cp_parallel_categories_diagram_umatan_2(race_df, raceuma_df, haraimodoshi_dict)
-    fig23.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 馬単的中3
     fig24 = wp.cp_parallel_categories_diagram_umatan_3(race_df, raceuma_df, haraimodoshi_dict)
-    fig24.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
-
     # ワイド的中1
     fig25 = wp.cp_parallel_categories_diagram_wide_1(race_df, raceuma_df, haraimodoshi_dict)
-    fig25.update_layout(height=400, margin={'t': 0, 'b': 0, 'l': 0})
 
-
-    return dcc.Loading(id="kpi-analytics-lender-loading", children=[dbc.Row([
-                wp.dbc_title("得点１位着順", 2),
-                wp.dbc_title("単勝回収率", 2),
-                wp.dbc_title("複勝回収率", 2),
-                wp.dbc_title("１番人気", 2),
-                wp.dbc_title("単勝回収率", 2),
-                wp.dbc_title("複勝回収率", 2),
-            ], className="h-8"),
+    return dcc.Loading(id="kpi-analytics-lender-loading", children=[
             dbc.Row([
-                wp.dbc_graph("fig1", 2, fig1),
-                wp.dbc_graph("fig2", 2, fig2),
-                wp.dbc_graph("fig3", 2, fig3),
-                wp.dbc_graph("fig4", 2, fig4),
-                wp.dbc_graph("fig5", 2, fig5),
-                wp.dbc_graph("fig6", 2, fig6),
-            ], className="h-20"),
+                wp.dbc_graph("fig1", 2, fig1, "得点１位着順", 130),
+                wp.dbc_graph("fig2", 2, fig2, "単勝回収率", 130),
+                wp.dbc_graph("fig3", 2, fig3, "複勝回収率", 130),
+                wp.dbc_graph("fig4", 2, fig4, "１番人気", 130),
+                wp.dbc_graph("fig5", 2, fig5, "単勝回収率", 130),
+                wp.dbc_graph("fig6", 2, fig6, "複勝回収率", 130),
+            ], className="h-20", no_gutters=True),
             dbc.Row([
-                wp.dbc_title("場所別単複回収率・的中率", 6),
-                wp.dbc_title("場所別馬券回収率・的中率", 6),
-            ], className="h-8"),
+                wp.dbc_graph("fig7", 6, fig7, "場所別単複回収率・的中率", 400),
+                wp.dbc_graph("fig8", 6, fig8, "場所別馬券回収率・的中率", 400),
+            ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_graph("fig7", 6, fig7),
-                wp.dbc_graph("fig8", 6, fig8),
-            ], className="h-50"),
+                wp.dbc_graph("fig10", 5, fig10, "馬連的中1", 400),
+                wp.dbc_graph("fig20", 7, fig20, "", 400),
+            ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_title("馬連的中1", 12),
-            ], className="h-8"),
+                wp.dbc_graph("fig11", 5, fig11, "馬連的中2", 400),
+                wp.dbc_graph("fig21", 7, fig21, "", 400),
+            ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_graph("fig10", 5, fig10),
-                wp.dbc_graph("fig20", 7, fig20),
-            ], className="h-50"),
+                wp.dbc_graph("fig12", 5, fig12, "馬単的中1", 400),
+                wp.dbc_graph("fig22", 7, fig22, "", 400),
+            ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_title("馬連的中2", 12),
-            ], className="h-8"),
+                wp.dbc_graph("fig13", 5, fig13, "馬単的中2", 400),
+                wp.dbc_graph("fig23", 7, fig23, "", 400),
+            ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_graph("fig11", 5, fig11),
-                wp.dbc_graph("fig21", 7, fig21),
-            ], className="h-50"),
+                wp.dbc_graph("fig14", 5, fig14, "馬単的中3", 400),
+                wp.dbc_graph("fig24", 7, fig24, "", 400),
+            ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_title("馬単的中1", 12),
-            ], className="h-8"),
-            dbc.Row([
-                wp.dbc_graph("fig12", 5, fig12),
-                wp.dbc_graph("fig22", 7, fig22),
-            ], className="h-50"),
-            dbc.Row([
-                wp.dbc_title("馬単的中2", 12),
-            ], className="h-8"),
-            dbc.Row([
-                wp.dbc_graph("fig13", 5, fig13),
-                wp.dbc_graph("fig23", 7, fig23),
-            ], className="h-50"),
-            dbc.Row([
-                wp.dbc_title("馬単的中3", 12),
-            ], className="h-8"),
-            dbc.Row([
-                wp.dbc_graph("fig14", 5, fig14),
-                wp.dbc_graph("fig24", 7, fig24),
-            ], className="h-50"),
-            dbc.Row([
-                wp.dbc_title("ワイド的中1", 12),
-            ], className="h-8"),
-            dbc.Row([
-                wp.dbc_graph("fig15", 5, fig15),
-                wp.dbc_graph("fig25", 7, fig25),
-            ], className="h-50"),
+                wp.dbc_graph("fig15", 5, fig15, "ワイド的中1", 400),
+                wp.dbc_graph("fig25", 7, fig25, "", 400),
+            ], className="h-50", no_gutters=True),
     ])

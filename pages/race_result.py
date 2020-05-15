@@ -2,11 +2,9 @@ import dash_bootstrap_components as dbc
 import components.webparts as wp
 import dash_core_components as dcc
 import dash_html_components as html
-import components.graph as gp
 import pandas as pd
 from datetime import datetime as dt
 import datetime
-import numpy as np
 
 def race_result():
     return dbc.Container([
@@ -45,12 +43,9 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
 
     # 得点
     fig1 = wp.cp_basic_horizontal_bar_chart_score(raceuma_df)
-    fig1.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
-
     # 得点バブル
     fig3_df = raceuma_df[["確定着順", "デフォルト得点", "SCORE", "得点V3", "馬名"]].sort_values("確定着順")
     fig3 = wp.cp_buble_chart_score(fig3_df)
-    fig3.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
     # テーブル
     fig4_df = raceuma_df[["枠番", "馬番", "馬名表用", "性別コード", "タイム", "タイム指数", "デフォルト得点", "得点", "馬券評価順位", "単勝オッズ",
@@ -68,52 +63,33 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
 
     # タイム指数、予想タイム指数
     fig6 = wp. cp_basic_dot_plot_time_record(raceuma_df)
-    fig6.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
-
     # タイム指数、単勝オッズ
     fig10 = wp.cp_bar_chart_with_line_plot_time_record_tansho(raceuma_df)
-    fig10.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
-
     # ラップ
     fig11 = wp.cp_simple_line_rap(race_sr, 500)
-
     # 単勝支持率
     fig12 = wp.cp_pie_chart_tansho_approval_rate(raceuma_df)
-    fig12.update_layout(height=500, margin={'t': 0, 'b': 0, 'l': 0})
 
 
     return dcc.Loading(id="race-result-render-loading", children=[dbc.Row([
-                wp.dbc_race_info(race_sr),
-                wp.dbc_race_result(race_sr, haraimodoshi_df),
-            ], className="h-8"),
+                wp.dbc_race_info(race_sr, 8),
+                wp.dbc_race_result(race_sr, haraimodoshi_df, 4),
+            ], className="h-8", no_gutters=True),
 
             dbc.Row([
-                wp.dbc_title("単勝支持率", 3),
-                wp.dbc_title("ラップ", 5),
-                wp.dbc_title("払戻・投票", 4),
-            ], className="h-8"),
-            dbc.Row([
-                wp.dbc_graph("fig12", 3, fig12),
-                wp.dbc_graph("fig11", 5, fig11),
+                wp.dbc_graph("fig12", 4, fig12, "単勝支持率", 400),
+                wp.dbc_graph("fig11", 4, fig11, "ラップ", 400),
                 wp.dbc_haraimodoshi_table("fig5_1", 2, fig5_haraimodoshi_df),
                 wp.dbc_bet_table("fig5_2", 2, fig5_bet_df),
-            ], className="h-50"),
+            ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_title("タイム指数、単勝オッズ", 6),
-                wp.dbc_title("タイム指数、予想タイム指数", 6),
-            ], className="h-8"),
+                wp.dbc_graph("fig10", 6, fig10, "タイム指数、単勝オッズ", 500),
+                wp.dbc_graph("fig6", 6, fig6, "タイム指数、予想タイム指数", 500),
+            ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_graph("fig10", 6, fig10),
-                wp.dbc_graph("fig6", 6, fig6),
-            ], className="h-50"),
-            dbc.Row([
-                wp.dbc_title("得点", 6),
-                wp.dbc_title("得点バブル", 6),
-            ], className="h-8"),
-            dbc.Row([
-                wp.dbc_graph("fig1", 6, fig1),
-                wp.dbc_graph("fig3", 6, fig3),
-            ], className="h-50"),
+                wp.dbc_graph("fig1", 6, fig1, "得点", 500),
+                wp.dbc_graph("fig3", 6, fig3, "得点バブル", 500),
+            ], className="h-50", no_gutters=True),
             wp.dbc_race_result_table("fig4", 16, fig4_df)
         ])
 
