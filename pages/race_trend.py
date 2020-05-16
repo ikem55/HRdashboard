@@ -61,17 +61,17 @@ def race_trend():
         fig9 = ""
 
     # 単勝配当分布
-    fig10 = wp.cp_pie_chart_tansho_dist(haraimodoshi_dict)
+    #fig10 = wp.cp_pie_chart_tansho_dist(haraimodoshi_dict)
     # 複勝配当分布
-    fig11 = wp.cp_pie_chart_fukusho_dist(haraimodoshi_dict)
+    #fig11 = wp.cp_pie_chart_fukusho_dist(haraimodoshi_dict)
     # 馬連配当分布
-    fig12 = wp.cp_pie_chart_umaren_dist(haraimodoshi_dict)
+    #fig12 = wp.cp_pie_chart_umaren_dist(haraimodoshi_dict)
     # 馬単配当分布
-    fig13 = wp.cp_pie_chart_umatan_dist(haraimodoshi_dict)
+    #fig13 = wp.cp_pie_chart_umatan_dist(haraimodoshi_dict)
     # ワイド配当分布
-    fig14 = wp.cp_pie_chart_wide_dist(haraimodoshi_dict)
+    #fig14 = wp.cp_pie_chart_wide_dist(haraimodoshi_dict)
     # 三連複配当分布
-    fig15 = wp.cp_pie_chart_sanrenpuku_dist(haraimodoshi_dict)
+    #fig15 = wp.cp_pie_chart_sanrenpuku_dist(haraimodoshi_dict)
     # 馬連的中1
     fig20 = wp.cp_stacked_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict)
     # 馬連的中2
@@ -98,14 +98,14 @@ def race_trend():
                 wp.dbc_graph("fig5", 2, fig5, "単勝回収率", 130),
                 wp.dbc_graph("fig6", 2, fig6, "複勝回収率", 130),
             ], className="h-20", no_gutters=True),
-            dbc.Row([
-                wp.dbc_graph("fig10", 2, fig10, "単勝配当分布", 200),
-                wp.dbc_graph("fig11", 2, fig11, "複勝配当分布", 200),
-                wp.dbc_graph("fig12", 2, fig12, "馬連配当分布", 200),
-                wp.dbc_graph("fig13", 2, fig13, "馬単配当分布", 200),
-                wp.dbc_graph("fig14", 2, fig14, "ワイド配当分布", 200),
-                wp.dbc_graph("fig15", 2, fig15, "三連複配当分布", 200),
-            ], className="h-20", no_gutters=True),
+#            dbc.Row([
+#                wp.dbc_graph("fig10", 2, fig10, "単勝配当分布", 200),
+#                wp.dbc_graph("fig11", 2, fig11, "複勝配当分布", 200),
+#                wp.dbc_graph("fig12", 2, fig12, "馬連配当分布", 200),
+#                wp.dbc_graph("fig13", 2, fig13, "馬単配当分布", 200),
+#                wp.dbc_graph("fig14", 2, fig14, "ワイド配当分布", 200),
+#                wp.dbc_graph("fig15", 2, fig15, "三連複配当分布", 200),
+#            ], className="h-20", no_gutters=True),
             dbc.Row([
                 wp.dbc_graph("fig7", 4, fig7, "場所別単複回収率・的中率", 300),
                 wp.dbc_graph("fig8", 4, fig8, "場所別馬券回収率・的中率", 300),

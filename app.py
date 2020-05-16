@@ -96,6 +96,7 @@ def toppage_render_top_dashboard(start_date, end_date):
     else:
         return html.P("not loading data")
 
+
 ## -------------------- return_analytics用コールバック -------------------------------##
 @app.callback(
     Output('return_analytics', 'children'),

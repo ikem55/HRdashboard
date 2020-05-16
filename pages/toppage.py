@@ -28,7 +28,6 @@ def toppage():
     )
 
 def toppage_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
-
     daily_bet_df = cd.get_daily_bet_df(bet_df)
     daily_rank1_raceuma_df = cd.get_daily_rank1_raceuma_df(raceuma_df)
     summary_bet_df = cd.get_summary_bet_df(bet_df)

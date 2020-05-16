@@ -44,8 +44,8 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     # 得点
     fig1 = wp.cp_basic_horizontal_bar_chart_score(raceuma_df)
     # 得点バブル
-    fig3_df = raceuma_df[["確定着順", "デフォルト得点", "SCORE", "得点V3", "馬名"]].sort_values("確定着順")
-    fig3 = wp.cp_buble_chart_score(fig3_df)
+    #fig3_df = raceuma_df[["確定着順", "デフォルト得点", "SCORE", "得点V3", "馬名"]].sort_values("確定着順")
+    #fig3 = wp.cp_buble_chart_score(fig3_df)
 
     # テーブル
     fig4_df = raceuma_df[["枠番", "馬番", "馬名表用", "性別コード", "タイム", "タイム指数", "デフォルト得点", "得点", "馬券評価順位", "単勝オッズ",
@@ -66,7 +66,7 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
     # タイム指数、単勝オッズ
     fig10 = wp.cp_bar_chart_with_line_plot_time_record_tansho(raceuma_df)
     # ラップ
-    fig11 = wp.cp_simple_line_rap(race_sr, 500)
+    #fig11 = wp.cp_simple_line_rap(race_sr, 500)
     # 単勝支持率
     fig12 = wp.cp_pie_chart_tansho_approval_rate(raceuma_df)
 
@@ -78,18 +78,18 @@ def race_result_render(race_df, raceuma_df, bet_df, haraimodoshi_dict):
 
             dbc.Row([
                 wp.dbc_graph("fig12", 4, fig12, "単勝支持率", 400),
-                wp.dbc_graph("fig11", 4, fig11, "ラップ", 400),
+                wp.dbc_graph("fig10", 4, fig10, "タイム指数、単勝オッズ", 500),
                 wp.dbc_haraimodoshi_table("fig5_1", 2, fig5_haraimodoshi_df),
                 wp.dbc_bet_table("fig5_2", 2, fig5_bet_df),
             ], className="h-50", no_gutters=True),
             dbc.Row([
-                wp.dbc_graph("fig10", 6, fig10, "タイム指数、単勝オッズ", 500),
+                wp.dbc_graph("fig1", 6, fig1, "得点", 400),
                 wp.dbc_graph("fig6", 6, fig6, "タイム指数、予想タイム指数", 500),
             ], className="h-50", no_gutters=True),
-            dbc.Row([
-                wp.dbc_graph("fig1", 6, fig1, "得点", 500),
-                wp.dbc_graph("fig3", 6, fig3, "得点バブル", 500),
-            ], className="h-50", no_gutters=True),
+#            dbc.Row([
+#                wp.dbc_graph("fig3", 6, fig3, "得点バブル", 500),
+#                wp.dbc_graph("fig11", 4, fig11, "ラップ", 400),
+#            ], className="h-50", no_gutters=True),
             wp.dbc_race_result_table("fig4", 16, fig4_df)
         ])
 

@@ -58,9 +58,9 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
     fig6 = wp.cp_add_steps_threshold_anda_delta_fukusho_return(fig6_df, fig6_df_diff)
 
     # 場所別単複回収率・的中率
-    fig7 = wp.cp_multiple_line_and_bar_chart_place_tanpuku_return(race_df, raceuma_df)
+    #fig7 = wp.cp_multiple_line_and_bar_chart_place_tanpuku_return(race_df, raceuma_df)
     # 場所別馬券回収率・的中率
-    fig8 = wp.cp_multiple_line_and_bar_chart_place_bet_return(bet_df)
+    #fig8 = wp.cp_multiple_line_and_bar_chart_place_bet_return(bet_df)
     # 馬連的中1
     fig10 = wp.cp_stacked_funnel_plot_umaren_1(race_df, raceuma_df, haraimodoshi_dict)
     # 馬連的中2
@@ -96,10 +96,10 @@ def kpi_analytics_render(race_df, raceuma_df, bet_df, haraimodoshi_dict, end_dat
                 wp.dbc_graph("fig5", 2, fig5, "単勝回収率", 130),
                 wp.dbc_graph("fig6", 2, fig6, "複勝回収率", 130),
             ], className="h-20", no_gutters=True),
-            dbc.Row([
-                wp.dbc_graph("fig7", 6, fig7, "場所別単複回収率・的中率", 400),
-                wp.dbc_graph("fig8", 6, fig8, "場所別馬券回収率・的中率", 400),
-            ], className="h-50", no_gutters=True),
+#            dbc.Row([
+#                wp.dbc_graph("fig7", 6, fig7, "場所別単複回収率・的中率", 400),
+#                wp.dbc_graph("fig8", 6, fig8, "場所別馬券回収率・的中率", 400),
+#            ], className="h-50", no_gutters=True),
             dbc.Row([
                 wp.dbc_graph("fig10", 5, fig10, "馬連的中1", 400),
                 wp.dbc_graph("fig20", 7, fig20, "", 400),
